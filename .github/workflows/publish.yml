@@ -3,26 +3,44 @@ name: Publish to PyPI
 on:
   push:
     tags:
-      - "v*"
+      - "v*.*.*"      # run only on version tags like v0.0.1
+
+permissions:
+  contents: read
+  id-token: write     # required for PyPI Trusted Publisher (OIDC)
+
+concurrency:
+  group: pypi-publish-${{ github.ref_name }}
+  cancel-in-progress: false
 
 jobs:
   build-publish:
-    permissions:
-      id-token: write
-      contents: read
-
+    name: Build and publish to PyPI
     runs-on: ubuntu-latest
+    environment: pypi   # match the environment you created on GitHub (PyPI trusted publisher)
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout source
+        uses: actions/checkout@v4
 
-      - uses: actions/setup-python@v5
+      - name: Set up Python
+        uses: actions/setup-python@v5
         with:
           python-version: "3.12"
 
-      - run: pip install build
+      - name: Install build tools
+        run: pip install build twine
 
-      - run: python -m build
+      - name: Build package (sdist + wheel)
+        run: python -m build
 
-      - name: Publish to PyPI
+      - name: Verify package metadata
+        run: twine check dist/*
+
+      - name: Publish to PyPI (OIDC)
         uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          verbose: true
+          # Leave skip-existing unset so duplicate versions fail fast.
+          # If you prefer to no-op on re-tags, uncomment the next line:
+          # skip-existing: true

@@ -4,11 +4,65 @@ build-backend = "hatchling.build"
 
 [project]
 name = "importdoc"
-version = "0.0.2"
-description = "Advanced Python import diagnostic tool"
+version = "0.0.5"
+description = "Advanced Python import diagnostic tool with deep analysis, subprocess isolation, auto-fixing suggestions, and CI-ready enforcement."
 readme = "README.md"
+license = { text = "MIT" }
+authors = [
+  { name = "dhruv13x", email = "dhruv13x@gmail.com" }
+]
 requires-python = ">=3.10"
-dependencies = ["jsonschema", "tqdm"]  # Optional extras
 
+dependencies = [
+  "jsonschema>=4.0.0",
+  "tqdm>=4.0.0"
+]
+
+# CLI entry point
 [project.scripts]
 importdoc = "importdoc.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/dhruv13x/importdoc"
+Repository = "https://github.com/dhruv13x/importdoc"
+Issues = "https://github.com/dhruv13x/importdoc/issues"
+Documentation = "https://pypi.org/project/importdoc"
+
+# Hatch build config
+[tool.hatch.build.targets.wheel]
+packages = ["src/importdoc"]
+
+[tool.hatch.build.targets.sdist]
+include = ["src", "tests", "README.md", "LICENSE", "pyproject.toml"]
+
+# Optional dev extras (can add later)
+[project.optional-dependencies]
+dev = [
+  "pytest>=8.0",
+  "pytest-cov>=4.1",
+  "black>=24.0",
+  "flake8>=7.0",
+  "mypy>=1.10",
+  "build>=1.2",
+  "twine>=5.0",
+  "rich>=13.0"
+]
+
+# For future test config (pytest usage)
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
+addopts = """
+--tb=long
+--showlocals
+--color=yes
+"""
+
+# Optional coverage (you can enable after tests added)
+[tool.coverage.run]
+branch = true
+source = ["src/importdoc"]
+
+[tool.coverage.report]
+show_missing = true
+skip_covered = true
