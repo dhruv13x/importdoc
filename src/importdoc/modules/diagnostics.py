@@ -14,6 +14,7 @@ from dataclasses import asdict
 from logging.handlers import RotatingFileHandler
 from pathlib import Path
 from typing import Dict, List, Optional, Set, Tuple
+from importlib import metadata
 
 try:
     from tqdm import tqdm
@@ -37,6 +38,11 @@ from .utils import (
     suggest_pip_names,
 )
 from .worker import import_module_worker
+
+try:
+    _package_version = metadata.version("importdoc")
+except metadata.PackageNotFoundError:
+    _package_version = "0.0.0"
 
 
 class ImportDiagnostic:
@@ -1194,7 +1200,7 @@ class ImportDiagnostic:
     ) -> None:
         elapsed = time.time() - self.start_time
         summary = {
-            "version": __version__,
+            "version": _package_version,
             "package": package_name,
             "discovered_modules": list(self.discovered_modules),
             "discovery_errors": [
