@@ -137,20 +137,7 @@ def suggest_pip_names(module_name: str) -> List[str]:
 
 
 def is_standard_lib(module_name: str) -> bool:
-    try:
-        spec = importlib.util.find_spec(module_name)
-        if spec is None:
-            return False
-        origin = getattr(spec, "origin", None)
-        if origin in (None, "built-in", "frozen"):
-            return True
-        stdlib = sysconfig.get_paths().get("stdlib")
-        if stdlib and str(origin).startswith(str(stdlib)):
-            return True
-        # fallback: treat as stdlib if not in site-packages path
-        return "site-packages" not in str(origin)
-    except Exception:
-        return False
+    return module_name in sys.stdlib_module_names
 
 
 def detect_env() -> Dict[str, bool]:
@@ -199,6 +186,8 @@ def find_symbol_definitions_in_repo(
             except Exception:
                 continue
             for node in tree.body:
+                if len(results) >= max_results:
+                    break
                 if isinstance(node, ast.ClassDef) and node.name == symbol:
                     results.append((path, node.lineno, "class"))
                 elif (
@@ -210,21 +199,8 @@ def find_symbol_definitions_in_repo(
                     for target in node.targets:
                         if isinstance(target, ast.Name) and target.id == symbol:
                             results.append((path, node.lineno, "assign"))
-                    for target in node.targets:
-                        if isinstance(target, ast.Name) and target.id == "__all__":
-                            try:
-                                if isinstance(node.value, (ast.List, ast.Tuple)):
-                                    for elt in node.value.elts:
-                                        if (
-                                            isinstance(elt, ast.Constant)
-                                            and isinstance(elt.value, str)
-                                            and elt.value == symbol
-                                        ):
-                                            results.append(
-                                                (path, node.lineno, "all_export")
-                                            )
-                            except Exception:
-                                pass
+                            if len(results) >= max_results:
+                                break
             if len(results) >= max_results:
                 break
     except Exception:
@@ -272,6 +248,12 @@ def find_import_usages_in_repo(
                                     node.lineno,
                                     f"from-import {mod} import {symbol}",
                                 )
+                            )
+                elif isinstance(node, ast.Import):
+                    for alias in node.names:
+                        if alias.name == symbol:
+                            results.append(
+                                (path, node.lineno, f"import {symbol}")
                             )
                 elif isinstance(node, ast.Import):
                     for alias in node.names:

@@ -22,8 +22,8 @@ class DiagnosticCache:
         try:
             self.cache_dir.mkdir(parents=True, exist_ok=True)
         except Exception:
-            # Fall back to home
-            self.cache_dir = Path.home() / ".import_diagnostic_cache"
+            # Fall back to temp dir
+            self.cache_dir = Path(tempfile.gettempdir()) / ".import_diagnostic_cache"
             self.cache_dir.mkdir(parents=True, exist_ok=True)
 
         self.enabled = True
