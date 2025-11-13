@@ -7,12 +7,12 @@ from importdoc.modules.diagnostics import ImportDiagnostic
 class TestDiagnosticsExtended(unittest.TestCase):
     def test_should_skip_module(self):
         # Test with no exclude patterns
-        diagnostic = ImportDiagnostic()
+        diagnostic = ImportDiagnostic(allow_root=True)
         self.assertFalse(diagnostic._should_skip_module("my_module"))
         self.assertEqual(len(diagnostic.skipped_modules), 0)
 
         # Test with an exclude pattern that matches
-        diagnostic = ImportDiagnostic(exclude_patterns=["^_private"])
+        diagnostic = ImportDiagnostic(exclude_patterns=["^_private"], allow_root=True)
         self.assertTrue(diagnostic._should_skip_module("_private_module"))
         self.assertIn("_private_module", diagnostic.skipped_modules)
 
@@ -22,7 +22,7 @@ class TestDiagnosticsExtended(unittest.TestCase):
 
     @patch("importlib.util.find_spec")
     def test_validate_package(self, mock_find_spec):
-        diagnostic = ImportDiagnostic()
+        diagnostic = ImportDiagnostic(allow_root=True)
 
         # Test case 1: Package is found
         mock_find_spec.return_value = MagicMock()
@@ -42,7 +42,7 @@ class TestDiagnosticsExtended(unittest.TestCase):
 
     @patch("importlib.util.find_spec")
     def test_discover_all_modules_no_submodules(self, mock_find_spec):
-        diagnostic = ImportDiagnostic()
+        diagnostic = ImportDiagnostic(allow_root=True)
         mock_spec = MagicMock()
         mock_spec.submodule_search_locations = None
         mock_find_spec.return_value = mock_spec
@@ -54,24 +54,24 @@ class TestDiagnosticsExtended(unittest.TestCase):
     @patch("importlib.util.find_spec", return_value=None)
     @patch("sys.path", [])
     def test_run_diagnostic_with_package_dir(self, mock_find_spec):
-        diagnostic = ImportDiagnostic()
+        diagnostic = ImportDiagnostic(allow_root=True)
         with patch.object(diagnostic, '_diagnose_path_issue'):
             result = diagnostic.run_diagnostic("my_package", "/tmp/my_package")
             self.assertFalse(result)
 
-    @patch("src.importdoc.modules.diagnostics.ImportDiagnostic._log")
+    @patch("importdoc.modules.diagnostics.ImportDiagnostic._log")
     def test_print_header(self, mock_log):
-        diagnostic = ImportDiagnostic()
+        diagnostic = ImportDiagnostic(allow_root=True)
         diagnostic._print_header("my_package", "/tmp/my_package")
 
         # Check that the log was called with the correct information
         self.assertTrue(any("Target package: my_package" in call[0][0] for call in mock_log.call_args_list))
         self.assertTrue(any("Package dir: /tmp/my_package" in call[0][0] for call in mock_log.call_args_list))
 
-    @patch("src.importdoc.modules.diagnostics.find_module_file_path")
-    @patch("src.importdoc.modules.diagnostics.ImportDiagnostic._log")
+    @patch("importdoc.modules.diagnostics.find_module_file_path")
+    @patch("importdoc.modules.diagnostics.ImportDiagnostic._log")
     def test_diagnose_path_issue(self, mock_log, mock_find_module_file_path):
-        diagnostic = ImportDiagnostic()
+        diagnostic = ImportDiagnostic(allow_root=True)
 
         # Test case 1: File path is found
         mock_path = MagicMock()

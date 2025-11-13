@@ -40,7 +40,7 @@ class TestUtilsExtended(unittest.TestCase):
         # Test with an absolute path
         path = Path("/app/my_package/my_module.py")
         result = _format_evidence_item(path, 10, "class")
-        self.assertEqual(result, "my_package/my_module.py:10: class")
+        self.assertEqual(result, "/app/my_package/my_module.py:10: class")
 
     def test_safe_read_text_encoding_error(self):
         path = Path("test_encoding.txt")
@@ -104,7 +104,7 @@ class TestUtilsExtended(unittest.TestCase):
         os.remove(path)
 
     def test_analyze_ast_symbols_file_read_error(self):
-        with patch("src.importdoc.modules.utils.safe_read_text", return_value=None):
+        with patch("importdoc.modules.utils.safe_read_text", return_value=None):
             symbols = analyze_ast_symbols(Path("non_existent_file.py"))
             self.assertEqual(symbols["error"], "Could not read file.")
 
@@ -117,7 +117,7 @@ class TestUtilsExtended(unittest.TestCase):
             path = find_module_file_path("my_module")
             self.assertEqual(path, Path("/dummy/path/my_module.py"))
 
-    @patch("src.importdoc.modules.utils.importlib_metadata")
+    @patch("importdoc.modules.utils.importlib_metadata")
     def test_suggest_pip_names_metadata_error(self, mock_importlib_metadata):
         # Test case where importlib_metadata.distributions raises an exception
         mock_importlib_metadata.distributions.side_effect = Exception("metadata error")
@@ -152,7 +152,7 @@ class TestUtilsExtended(unittest.TestCase):
 
         with patch("pathlib.Path.rglob") as mock_rglob:
             mock_rglob.return_value = [Path("dummy_project/my_package/my_module.py")]
-            with patch("src.importdoc.modules.utils.safe_read_text", return_value="my_symbol = 1\nmy_symbol = 2"):
+            with patch("importdoc.modules.utils.safe_read_text", return_value="my_symbol = 1\nmy_symbol = 2"):
                 results = find_symbol_definitions_in_repo(root, "my_symbol", max_results=1)
                 self.assertEqual(len(results), 1)
 
