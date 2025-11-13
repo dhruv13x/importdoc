@@ -2,7 +2,7 @@ import unittest
 from unittest.mock import MagicMock, patch
 from pathlib import Path
 import re
-from src.importdoc.modules.diagnostics import ImportDiagnostic
+from importdoc.modules.diagnostics import ImportDiagnostic
 
 class TestDiagnosticsExtended(unittest.TestCase):
     def test_should_skip_module(self):

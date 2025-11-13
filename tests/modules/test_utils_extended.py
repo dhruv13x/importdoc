@@ -3,7 +3,7 @@ import unittest
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
-from src.importdoc.modules.utils import (
+from importdoc.modules.utils import (
     _format_evidence_item,
     analyze_ast_symbols,
     find_import_usages_in_repo,
