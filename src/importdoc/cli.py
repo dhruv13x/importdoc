@@ -17,10 +17,14 @@ import argparse
 import sys
 import traceback
 from pathlib import Path
+from importlib import metadata
 
 from .modules.diagnostics import ImportDiagnostic
 
-__version__ = "1.0.0"  # Enhanced version for better diagnosis
+try:
+    __version__ = metadata.version("importdoc")
+except metadata.PackageNotFoundError:
+    __version__ = "0.0.0"
 
 
 # ----------
