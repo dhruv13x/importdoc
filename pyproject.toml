@@ -57,9 +57,6 @@ addopts = [
     "--cov=src/importdoc",  # Measure coverage on the src package
     "--cov-report=term-missing", # Show missing lines in terminal
     "--cov-fail-under=85",   # Fail build if coverage < 85%
-#    --tb=long
-#--showlocals
-#--color=yes
 ]
 
 log_cli = true

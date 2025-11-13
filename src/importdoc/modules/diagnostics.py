@@ -39,6 +39,7 @@ from .utils import (
 )
 from .worker import import_module_worker
 
+__version__ = "1.0.0"
 try:
     _package_version = metadata.version("importdoc")
 except metadata.PackageNotFoundError:
@@ -788,25 +789,30 @@ class ImportDiagnostic:
             else:
                 missing_mod = module_name
             base_mod = ".".join(missing_mod.split(".")[:-1])
+
+            is_submodule_of_existing_parent = False
             if base_mod:
                 try:
                     if importlib.util.find_spec(base_mod) is not None:
-                        context["type"] = "local_submodule"
-                        context["suggestions"].extend(
-                            [
-                                f"Create missing submodule '{missing_mod}' in package '{base_mod}'",
-                                f"Expected path: {missing_mod.replace('.', '/')}.py or {missing_mod.replace('.', '/')}/__init__.py",
-                                "Check for typos in import statements",
-                                "Verify module exists in correct location",
-                            ]
-                        )
-                        context["evidence"].append(
-                            f"Parent module '{base_mod}' exists."
-                        )
+                        is_submodule_of_existing_parent = True
                 except Exception as e:
                     context["evidence"].append(
                         f"Failed to check parent module: {type(e).__name__}: {e}"
                     )
+
+            if is_submodule_of_existing_parent:
+                context["type"] = "local_submodule"
+                context["suggestions"].extend(
+                    [
+                        f"Create missing submodule '{missing_mod}' in package '{base_mod}'",
+                        f"Expected path: {missing_mod.replace('.', '/')}.py or {missing_mod.replace('.', '/')}/__init__.py",
+                        "Check for typos in import statements",
+                        "Verify module exists in correct location",
+                    ]
+                )
+                context["evidence"].append(
+                    f"Parent module '{base_mod}' exists."
+                )
             elif self._current_package and missing_mod.startswith(
                 self._current_package + "."
             ):
