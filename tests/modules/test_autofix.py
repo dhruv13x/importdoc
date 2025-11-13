@@ -1,5 +1,5 @@
 import unittest
-from src.importdoc.modules.autofix import FixGenerator
+from importdoc.modules.autofix import FixGenerator
 
 class TestAutofix(unittest.TestCase):
     def test_generate_missing_import_fix(self):

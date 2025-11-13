@@ -1,5 +1,5 @@
 import unittest
-from src.importdoc.modules.worker import import_module_worker
+from importdoc.modules.worker import import_module_worker
 
 class TestWorker(unittest.TestCase):
     def test_import_module_worker_success(self):

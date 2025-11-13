@@ -2,7 +2,7 @@ import unittest
 from pathlib import Path
 import tempfile
 import shutil
-from src.importdoc.modules.utils import (
+from importdoc.modules.utils import (
     safe_read_text,
     analyze_ast_symbols,
     find_module_file_path,

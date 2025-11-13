@@ -1,5 +1,5 @@
 import unittest
-from src.importdoc.modules.confidence import ConfidenceCalculator
+from importdoc.modules.confidence import ConfidenceCalculator
 
 class TestConfidence(unittest.TestCase):
     def test_confidence_calculator(self):

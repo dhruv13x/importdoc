@@ -1,5 +1,5 @@
 import unittest
-from src.importdoc.modules.telemetry import TelemetryCollector
+from importdoc.modules.telemetry import TelemetryCollector
 
 class TestTelemetry(unittest.TestCase):
     def test_telemetry_collector(self):

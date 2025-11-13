@@ -1,5 +1,5 @@
 import unittest
-from src.importdoc.modules.diagnostics import ImportDiagnostic
+from importdoc.modules.diagnostics import ImportDiagnostic
 
 class TestDiagnostics(unittest.TestCase):
     def test_import_diagnostic_init(self):

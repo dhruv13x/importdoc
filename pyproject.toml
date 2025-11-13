@@ -48,15 +48,24 @@ dev = [
   "rich>=13.0"
 ]
 
-# For future test config (pytest usage)
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = ["src"]
-addopts = """
---tb=long
---showlocals
---color=yes
-"""
+addopts = [
+    "-q",                  # Run in quiet mode
+    "--strict-markers",    # Be strict about pytest markers
+    "--cov=src/importdoc",  # Measure coverage on the src package
+    "--cov-report=term-missing", # Show missing lines in terminal
+    "--cov-fail-under=85",   # Fail build if coverage < 85%
+#    --tb=long
+#--showlocals
+#--color=yes
+]
+
+log_cli = true
+log_cli_level = "INFO"
+
+
 
 # Optional coverage (you can enable after tests added)
 [tool.coverage.run]

@@ -2,7 +2,7 @@ import unittest
 from pathlib import Path
 import tempfile
 import shutil
-from src.importdoc.modules.cache import DiagnosticCache
+from importdoc.modules.cache import DiagnosticCache
 
 class TestCache(unittest.TestCase):
     def setUp(self):

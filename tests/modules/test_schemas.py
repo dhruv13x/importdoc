@@ -1,5 +1,5 @@
 import unittest
-from src.importdoc.modules.schemas import validate_json, JSON_SUMMARY_SCHEMA, FIXES_SCHEMA
+from importdoc.modules.schemas import validate_json, JSON_SUMMARY_SCHEMA, FIXES_SCHEMA
 
 class TestSchemas(unittest.TestCase):
     def test_validate_json_summary_schema(self):
