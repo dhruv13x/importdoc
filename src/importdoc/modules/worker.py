@@ -1,3 +1,5 @@
+# src/importdoc/modules/worker.py
+
 import json
 import subprocess
 import sys

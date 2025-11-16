@@ -1,3 +1,5 @@
+# src/importdoc/modules/telemetry.py
+
 import json
 import threading
 import time

@@ -1,3 +1,5 @@
+# tests/modules/test_diagnostics_extended.py
+
 import unittest
 from unittest.mock import MagicMock, patch
 from pathlib import Path

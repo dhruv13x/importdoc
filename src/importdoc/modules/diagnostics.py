@@ -1,3 +1,5 @@
+# src/importdoc/modules/diagnostics.py
+
 import builtins
 import concurrent.futures
 import importlib.util

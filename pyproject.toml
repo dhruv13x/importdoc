@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "importdoc"
-version = "1.0.0"
+version = "2.0.0"
 description = "Advanced Python import diagnostic tool with deep analysis, subprocess isolation, auto-fixing suggestions, and CI-ready enforcement."
 readme = "README.md"
 license = { text = "MIT" }

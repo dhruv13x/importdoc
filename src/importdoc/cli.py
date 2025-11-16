@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# src/importdoc/cli.py
+
 """
 # importdoc.py
 Advanced Import Diagnostic Tool V20 — PRODUCTION
@@ -20,6 +22,7 @@ from pathlib import Path
 from importlib import metadata
 
 from .modules.diagnostics import ImportDiagnostic
+from .banner import print_logo
 
 try:
     __version__ = metadata.version("importdoc")
@@ -31,6 +34,7 @@ except metadata.PackageNotFoundError:
 # CLI entrypoint
 # ----------
 def main():
+    print_logo()
     parser = argparse.ArgumentParser(
         description="Advanced Import Diagnostic Tool V20 - Hardened production build with enhanced diagnosis",
         formatter_class=argparse.RawTextHelpFormatter,

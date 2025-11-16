@@ -1,3 +1,5 @@
+# tests/modules/test_diagnostics.py
+
 
 import unittest
 import pytest
