@@ -48,6 +48,10 @@ def test_main_internal_error():
     with patch("importdoc.cli.ImportDiagnostic", autospec=True) as mock_diagnostic_class:
         mock_diagnostic_instance = mock_diagnostic_class.return_value
         mock_diagnostic_instance.run_diagnostic.side_effect = Exception("Test error")
+        # Mock reporter
+        from unittest.mock import MagicMock
+        mock_diagnostic_instance.reporter = MagicMock()
+        
         with patch.object(sys, "argv", ["importdoc", "os", "--allow-root"]): # Added --allow-root
             with pytest.raises(SystemExit) as e:
                 main()

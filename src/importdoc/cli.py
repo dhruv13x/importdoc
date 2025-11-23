@@ -56,6 +56,7 @@ def main():
     parser.add_argument("--unload", action="store_true", help="Unload after import.")
     parser.add_argument("--json", action="store_true", help="JSON output.")
     parser.add_argument("--parallel", type=int, default=0, help="Parallel imports.")
+    parser.add_argument("--dev-mode", action="store_true", help="Enable developer mode.")
     parser.add_argument("--dev-trace", action="store_true", help="Trace import chains.")
     parser.add_argument("--graph", action="store_true", help="Generate DOT graph.")
     parser.add_argument("--dot-file", help="DOT file path.")
@@ -105,6 +106,7 @@ def main():
         json_output=args.json,
         parallel=args.parallel,
         max_depth=args.max_depth,
+        dev_mode=args.dev_mode,
         dev_trace=args.dev_trace,
         graph=args.graph,
         dot_file=args.dot_file,
@@ -119,20 +121,14 @@ def main():
         max_scan_results=args.max_scan_results,  # New
     )
 
-    if args.dir:
-        try:
-            diagnostic.project_root = Path(args.dir).resolve()
-        except Exception:
-            diagnostic.project_root = Path.cwd()
-
     try:
         success = diagnostic.run_diagnostic(args.package, args.dir)
         sys.exit(0 if success else 1)
     except Exception as e:
         # if logger not available, fallback to print
         try:
-            diagnostic._log(f"Internal error: {e}", level="ERROR")
-            diagnostic._log(traceback.format_exc(), level="DEBUG")
+            diagnostic.reporter.log(f"Internal error: {e}", level="ERROR")
+            diagnostic.reporter.log(traceback.format_exc(), level="DEBUG")
         except Exception:
             print(f"Internal error: {e}", file=sys.stderr)
             traceback.print_exc()
