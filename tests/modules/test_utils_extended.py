@@ -39,10 +39,18 @@ class TestUtilsExtended(unittest.TestCase):
         result = _format_evidence_item(path, 10, "class")
         self.assertEqual(result, "my_package/my_module.py:10: class")
 
-        # Test with an absolute path
-        path = Path("/app/my_package/my_module.py")
+        # Test with an absolute path that is inside CWD
+        # If CWD is /app, then /app/my_package/my_module.py is relative to CWD
+        cwd = Path.cwd()
+        path = cwd / "my_package/my_module.py"
         result = _format_evidence_item(path, 10, "class")
-        self.assertEqual(result, "/app/my_package/my_module.py:10: class")
+        self.assertEqual(result, "my_package/my_module.py:10: class")
+
+        # Test with an absolute path that is outside CWD
+        # Assuming /tmp is outside /app (or whatever CWD is)
+        path = Path("/tmp/my_package/my_module.py")
+        result = _format_evidence_item(path, 10, "class")
+        self.assertEqual(result, "/tmp/my_package/my_module.py:10: class")
 
     def test_safe_read_text_encoding_error(self):
         path = Path("test_encoding.txt")

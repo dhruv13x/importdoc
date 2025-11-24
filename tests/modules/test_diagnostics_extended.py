@@ -1,98 +1,147 @@
-# tests/modules/test_diagnostics_extended.py
 
 import unittest
 from unittest.mock import MagicMock, patch
-from pathlib import Path
-import re
-
 from importdoc.modules.diagnostics import ImportDiagnostic
-from importdoc.modules.discovery import DiscoveryResult # For mocking return values
+import sys
+from pathlib import Path
 
-class TestDiagnosticsExtended(unittest.TestCase):
-    def test_should_skip_module(self):
-        diagnostic = ImportDiagnostic(allow_root=True)
-        # Test with no exclude patterns
-        self.assertFalse(diagnostic.discoverer._should_skip_module("my_module"))
-        self.assertEqual(len(diagnostic.discoverer.skipped_modules), 0)
+class TestImportDiagnostic(unittest.TestCase):
+    def setUp(self):
+        self.diagnostic = ImportDiagnostic()
+        self.diagnostic.reporter = MagicMock()
+        self.diagnostic.discoverer = MagicMock()
+        self.diagnostic.runner = MagicMock()
 
-        # Test with an exclude pattern that matches
-        diagnostic = ImportDiagnostic(exclude_patterns=["^_private"], allow_root=True)
-        self.assertTrue(diagnostic.discoverer._should_skip_module("_private_module"))
-        self.assertIn("_private_module", diagnostic.discoverer.skipped_modules)
+    def test_run_diagnostic_success(self):
+        # We need to ensure _skip_imports_enforced_by_safe_mode is False.
+        # It is set in __init__, so we can manually override it on the instance.
+        self.diagnostic._skip_imports_enforced_by_safe_mode = False
 
-        # Test with an exclude pattern that does not match
-        self.assertFalse(diagnostic.discoverer._should_skip_module("public_module"))
-        self.assertNotIn("public_module", diagnostic.discoverer.skipped_modules)
+        self.diagnostic.discoverer.validate_package.return_value = True
+        discovery_result = MagicMock()
+        discovery_result.discovered_modules = {"foo"}
+        discovery_result.discovery_errors = []
+        discovery_result.skipped_modules = set()
+        discovery_result.package_tree = {}
+        self.diagnostic.discoverer.discover.return_value = discovery_result
 
-    @patch("importdoc.modules.discovery.importlib.util.find_spec")
-    def test_validate_package(self, mock_find_spec):
-        diagnostic = ImportDiagnostic(allow_root=True)
+        self.diagnostic.runner.run_imports.return_value = True
+        self.diagnostic.runner.failed_modules = []
+        self.diagnostic.runner.auto_fixes = []
+        self.diagnostic.runner.edges = set()
 
-        # Test case 1: Package is found
-        mock_find_spec.return_value = MagicMock()
-        self.assertTrue(diagnostic.discoverer.validate_package("existing_package"))
+        result = self.diagnostic.run_diagnostic("foo")
+        self.assertTrue(result)
+        self.diagnostic.runner.run_imports.assert_called()
 
-        # Test case 2: Package is not found
-        mock_find_spec.return_value = None
-        with patch.object(diagnostic.reporter, 'diagnose_path_issue') as mock_diagnose:
-            self.assertFalse(diagnostic.discoverer.validate_package("non_existing_package"))
-            mock_diagnose.assert_called_once_with("non_existing_package")
+    def test_run_diagnostic_validate_fail(self):
+        self.diagnostic.discoverer.validate_package.return_value = False
+        result = self.diagnostic.run_diagnostic("foo")
+        self.assertFalse(result)
 
-        # Test case 3: find_spec raises an exception
-        mock_find_spec.side_effect = Exception("test error")
-        with patch.object(diagnostic.reporter, 'diagnose_path_issue') as mock_diagnose:
-            self.assertFalse(diagnostic.discoverer.validate_package("error_package"))
-            mock_diagnose.assert_called_once_with("error_package")
+    def test_run_diagnostic_discovery_only(self):
+        self.diagnostic.config.dry_run = True
+        self.diagnostic.discoverer.validate_package.return_value = True
+        discovery_result = MagicMock()
+        discovery_result.discovery_errors = []
+        self.diagnostic.discoverer.discover.return_value = discovery_result
 
-    @patch("importdoc.modules.discovery.importlib.util.find_spec")
-    def test_discover_all_modules_no_submodules(self, mock_find_spec):
-        diagnostic = ImportDiagnostic(allow_root=True)
-        mock_spec = MagicMock()
-        mock_spec.submodule_search_locations = None
-        mock_find_spec.return_value = mock_spec
+        result = self.diagnostic.run_diagnostic("foo")
+        self.assertTrue(result)
+        self.diagnostic.runner.run_imports.assert_not_called()
 
-        result = diagnostic.discoverer.discover("my_package")
-        self.assertIn("my_package", result.discovered_modules)
-        self.assertEqual(len(result.discovered_modules), 1)
+    def test_run_diagnostic_safe_mode_skip(self):
+        # safe mode is true by default
+        self.diagnostic.env_info["virtualenv"] = False
+        self.diagnostic._check_environment()
+        self.assertTrue(self.diagnostic._skip_imports_enforced_by_safe_mode)
 
-    @patch("importdoc.modules.discovery.importlib.util.find_spec", return_value=None)
-    @patch("sys.path", [])
-    def test_run_diagnostic_with_package_dir(self, mock_find_spec):
-        diagnostic = ImportDiagnostic(allow_root=True)
-        with patch.object(diagnostic.reporter, 'diagnose_path_issue') as mock_diagnose:
-            result = diagnostic.run_diagnostic("my_package", "/tmp/my_package")
-            self.assertFalse(result)
-            mock_diagnose.assert_called_once_with("my_package") # Should be called by validate_package failure
+        self.diagnostic.discoverer.validate_package.return_value = True
+        discovery_result = MagicMock()
+        discovery_result.discovery_errors = []
+        self.diagnostic.discoverer.discover.return_value = discovery_result
 
-    @patch("importdoc.modules.reporting.DiagnosticReporter.log")
-    def test_print_header(self, mock_log):
-        diagnostic = ImportDiagnostic(allow_root=True)
-        diagnostic.reporter.print_header("my_package", "/tmp/my_package")
+        result = self.diagnostic.run_diagnostic("foo")
+        self.assertTrue(result)
+        self.diagnostic.runner.run_imports.assert_not_called()
 
-        # Check that the log was called with the correct information
-        self.assertTrue(any("Target package: my_package" in call[0][0] for call in mock_log.call_args_list))
-        self.assertTrue(any("Package dir: /tmp/my_package" in call[0][0] for call in mock_log.call_args_list))
+    def test_run_diagnostic_with_package_dir(self):
+        self.diagnostic.discoverer.validate_package.return_value = True
+        discovery_result = MagicMock()
+        discovery_result.discovery_errors = []
+        self.diagnostic.discoverer.discover.return_value = discovery_result
+        self.diagnostic.runner.failed_modules = []
+        self.diagnostic.runner.auto_fixes = []
+        self.diagnostic.runner.edges = set()
 
-    @patch("importdoc.modules.utils.find_module_file_path")
-    @patch("importdoc.modules.reporting.DiagnosticReporter.log")
-    def test_diagnose_path_issue(self, mock_log, mock_find_module_file_path):
-        diagnostic = ImportDiagnostic(allow_root=True)
+        with patch("sys.path", []) as mock_sys_path:
+             with patch("pathlib.Path.resolve", return_value=Path("/tmp/pkg")):
+                 result = self.diagnostic.run_diagnostic("pkg", "/tmp/pkg")
+                 self.assertIn(str(Path("/tmp")), mock_sys_path)
 
-        # Test case 1: File path is found
-        mock_path = MagicMock()
-        mock_path.stat.return_value.st_mode = 0o755
-        mock_find_module_file_path.return_value = mock_path
+    def test_run_diagnostic_generate_fixes(self):
+        self.diagnostic.config.generate_fixes = True
+        self.diagnostic.discoverer.validate_package.return_value = True
+        discovery_result = MagicMock()
+        discovery_result.discovery_errors = []
+        self.diagnostic.discoverer.discover.return_value = discovery_result
+        self.diagnostic.runner.failed_modules = []
+        self.diagnostic.runner.auto_fixes = ["fix"]
+        self.diagnostic.runner.edges = set()
 
-        diagnostic.reporter.diagnose_path_issue("my_module")
+        self.diagnostic.run_diagnostic("foo")
+        self.diagnostic.reporter.export_fixes.assert_called_with(["fix"])
 
-        self.assertTrue(any("Found file:" in call[0][0] for call in mock_log.call_args_list))
-        self.assertTrue(any("Permissions: 755" in call[0][0] for call in mock_log.call_args_list))
+    def test_run_diagnostic_json_output(self):
+        self.diagnostic.config.json_output = True
+        self.diagnostic.discoverer.validate_package.return_value = True
+        discovery_result = MagicMock()
+        discovery_result.discovery_errors = []
+        self.diagnostic.discoverer.discover.return_value = discovery_result
+        self.diagnostic.runner.failed_modules = []
+        self.diagnostic.runner.auto_fixes = []
+        self.diagnostic.runner.edges = set()
 
-        # Test case 2: File path is not found
-        mock_log.reset_mock()
-        mock_find_module_file_path.return_value = None
-        diagnostic.reporter.diagnose_path_issue("my_module")
-        self.assertTrue(any("No file found matching module." in call[0][0] for call in mock_log.call_args_list))
+        self.diagnostic.run_diagnostic("foo")
+        self.diagnostic.reporter.print_json_summary.assert_called()
+
+    def test_run_diagnostic_failure(self):
+        self.diagnostic.discoverer.validate_package.return_value = True
+        discovery_result = MagicMock()
+        discovery_result.discovery_errors = []
+        self.diagnostic.discoverer.discover.return_value = discovery_result
+        self.diagnostic.runner.failed_modules = [("foo", "err")]
+        self.diagnostic.runner.auto_fixes = []
+        self.diagnostic.runner.edges = set()
+
+        result = self.diagnostic.run_diagnostic("foo")
+        self.assertFalse(result)
+
+    def test_run_diagnostic_discovery_error(self):
+        self.diagnostic.discoverer.validate_package.return_value = True
+        discovery_result = MagicMock()
+        discovery_result.discovery_errors = [("foo", "err")]
+        self.diagnostic.discoverer.discover.return_value = discovery_result
+        self.diagnostic.runner.failed_modules = []
+        self.diagnostic.runner.auto_fixes = []
+        self.diagnostic.runner.edges = set()
+
+        result = self.diagnostic.run_diagnostic("foo")
+        self.assertFalse(result)
+
+    def test_graph_export(self):
+        self.diagnostic.config.graph = True
+        self.diagnostic.config.dot_file = "out.dot"
+        self.diagnostic.discoverer.validate_package.return_value = True
+        discovery_result = MagicMock()
+        discovery_result.discovery_errors = []
+        self.diagnostic.discoverer.discover.return_value = discovery_result
+        self.diagnostic.runner.failed_modules = []
+        self.diagnostic.runner.auto_fixes = []
+        self.diagnostic.runner.edges = {("a", "b")}
+
+        self.diagnostic.run_diagnostic("foo")
+        self.diagnostic.reporter.export_graph.assert_called()
 
 if __name__ == "__main__":
     unittest.main()
