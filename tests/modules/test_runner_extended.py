@@ -12,8 +12,9 @@ import sys
 
 class TestImportRunner(unittest.TestCase):
     def setUp(self):
-        self.config = DiagnosticConfig()
-        self.reporter = MagicMock(spec=DiagnosticReporter)
+        self.config = DiagnosticConfig(allow_root=True)
+        self.reporter = DiagnosticReporter(self.config)
+        self.reporter.log = MagicMock()
         self.analyzer = MagicMock(spec=ErrorAnalyzer)
         self.telemetry = MagicMock(spec=TelemetryCollector)
         self.cache = MagicMock(spec=DiagnosticCache)

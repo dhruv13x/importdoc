@@ -9,8 +9,10 @@ import sys
 
 class TestModuleDiscoverer(unittest.TestCase):
     def setUp(self):
-        self.config = DiagnosticConfig()
-        self.reporter = MagicMock(spec=DiagnosticReporter)
+        self.config = DiagnosticConfig(allow_root=True)
+        self.reporter = DiagnosticReporter(self.config)
+        self.reporter.log = MagicMock()
+        self.reporter.diagnose_path_issue = MagicMock()
         self.discoverer = ModuleDiscoverer(self.config, self.reporter)
 
     def test_should_skip_module(self):

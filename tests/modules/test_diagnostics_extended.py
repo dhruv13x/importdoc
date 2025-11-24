@@ -7,7 +7,7 @@ from pathlib import Path
 
 class TestImportDiagnostic(unittest.TestCase):
     def setUp(self):
-        self.diagnostic = ImportDiagnostic()
+        self.diagnostic = ImportDiagnostic(allow_root=True)
         self.diagnostic.reporter = MagicMock()
         self.diagnostic.discoverer = MagicMock()
         self.diagnostic.runner = MagicMock()

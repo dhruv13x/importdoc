@@ -10,7 +10,7 @@ from importdoc.modules.autofix import AutoFix
 
 class TestReporter(unittest.TestCase):
     def setUp(self):
-        self.config = DiagnosticConfig()
+        self.config = DiagnosticConfig(allow_root=True)
         self.reporter = DiagnosticReporter(self.config)
         self.reporter.logger = MagicMock()
 

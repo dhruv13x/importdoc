@@ -8,7 +8,7 @@ from importdoc.modules.config import DiagnosticConfig
 
 class TestErrorAnalyzer(unittest.TestCase):
     def setUp(self):
-        self.config = DiagnosticConfig()
+        self.config = DiagnosticConfig(allow_root=True)
         self.analyzer = ErrorAnalyzer(self.config)
 
     def test_analyze_no_module_named_standard_library(self):
