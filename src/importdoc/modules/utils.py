@@ -326,4 +326,4 @@ def _format_evidence_item(path: Path, lineno: int, kind: str) -> str:
         rel = path.relative_to(Path.cwd())
     except Exception:
         rel = path
-    return f"{rel}:{lineno}: {kind}"
+    return f"{str(rel)}:{lineno}: {kind}"
