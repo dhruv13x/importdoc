@@ -34,72 +34,43 @@
 
 # importdoc
 
-> **Advanced Import Diagnostic Tool for Python**  
-Deep, automated import analysis for Python projects — with subprocess-safe imports, circular dependency detection, auto-fix suggestions, AST-based symbol resolution, and CI-ready JSON output.
+> **Production-Ready Import Diagnostic Tool for Python**
+A hardened diagnostic tool for deep, automated import analysis in Python projects. It features subprocess-safe imports, circular dependency detection, auto-fix suggestions, AST-based symbol resolution, and CI-ready JSON output.
 
 ---
 
-## 🚀 Features
+## 🚀 Quick Start (User View):
 
-| Capability | Description |
-|----------|-------------|
-🔍 **Import graph discovery** | Recursively maps and validates imports across a project  
-🧠 **AST-based analysis** | Detects missing imports, wrong module paths, and unresolved symbols  
-⚡ **Subprocess safe imports** | Imports each module in a sandboxed subprocess (timeout safe)  
-🛑 **Circular import detection** | Identifies dependency cycles with stack traces  
-🛠️ **Automated fix suggestions** | Suggest proper import paths + generate JSON patches  
-📊 **JSON diagnostic mode** | CI-friendly structured reports  
-📦 **Cache & telemetry** | Optional cache + performance metrics  
-🛡️ **Safe mode** | Avoids dangerous imports outside venv by default  
-📈 **Graph export** | DOT dependency graph generation (Graphviz)  
+### Prerequisites
+- Python 3.10+
+- `jsonschema`
+- `tqdm`
+- `rich`
 
----
-
-## 📦 Installation
-
-### PyPI
+### One-Command Installation
 
 ```bash
 pip install importdoc
+```
 
-Development (editable)
+### Usage Example
 
-pip uninstall importdoc -y
-pip install -e .
-
-
----
-
-🔧 CLI Usage
-
-Basic usage
-
+```bash
 importdoc your_package
+```
 
-Running in a project dir
+## ✨ Key Features
 
-importdoc your_package --dir .
-
-Allow root (CI / Docker)
-
-importdoc your_package --allow-root
-
-Enable full diagnostics
-
-importdoc your_package --verbose --enable-cache --enable-telemetry
-
-JSON output (CI pipelines)
-
-importdoc your_package --json > import_report.json
-
-Auto-fix suggestions
-
-importdoc your_package --generate-fixes --fix-output fixes.json
-
-Dependency graph (Graphviz)
-
-importdoc your_package --graph --dot-file imports.dot
-dot -Tpng imports.dot -o graph.png
+- 🔍 **Import graph discovery**: Recursively maps and validates imports across a project.
+- 🧠 **AST-based analysis**: Detects missing imports, wrong module paths, and unresolved symbols.
+- ⚡ **Subprocess safe imports**: Imports each module in a sandboxed subprocess, making it timeout-safe.
+- 🛑 **Circular import detection**: Identifies dependency cycles with detailed stack traces.
+- 🛠️ **Automated fix suggestions**: Suggests proper import paths and generates JSON patches for auto-fixing.
+- 📊 **JSON diagnostic mode**: Provides CI-friendly structured reports for easy integration.
+- 📦 **Cache & telemetry**: Includes an optional cache and performance metrics to speed up subsequent runs.
+- 🛡️ **Safe mode**: Avoids dangerous imports outside the virtual environment by default.
+- 📈 **Graph export**: Generates a DOT dependency graph for visualization with Graphviz.
+- **Enhanced `no module named` diagnosis**: **God Level** Parses import symbols from the AST to suggest correct paths based on symbol definitions, providing more accurate and actionable insights.
 
 
 ---
@@ -122,23 +93,75 @@ dot -Tpng imports.dot -o graph.png
 
 ---
 
-⚙️ Options Summary
+⚙️ Configuration & Advanced Usage (Dev View)
 
-Flag	Purpose
+### CLI/API Table
 
---continue-on-error	Never stop on failures
---parallel N	Parallel subprocess imports
---json	JSON report mode
---graph	Create DOT graph
---no-safe-mode	Allow global environment imports
---enable-cache	Speed up repeated runs
---dev-trace	Debug import chain tracing
+| Argument | Description | Default |
+|---|---|---|
+| `package` | The root package to diagnose. | N/A |
+| `--dir` | The directory of the package, which adds the parent to `sys.path`. | N/A |
+| `--continue-on-error` | Continues the diagnosis even after encountering errors. | `False` |
+| `--dry-run` | Discovers modules without actually importing them. | `False` |
+| `--max-depth` | The maximum depth for module discovery. | N/A |
+| `--log-file` | The path to the log file. | N/A |
+| `--verbose` | Enables detailed and extensive output. | `False` |
+| `--quiet` | Minimizes the output to only essential information. | `False` |
+| `--no-emoji` | Disables the use of emojis in the output. | `False` |
+| `--timeout` | The timeout in seconds for each import. | `0` |
+| `--unload` | Unloads modules after they are imported. | `False` |
+| `--json` | Outputs the diagnosis in JSON format. | `False` |
+| `--parallel` | The number of parallel imports to run. | `0` |
+| `--dev-mode` | Enables developer mode for additional diagnostics. | `False` |
+| `--dev-trace` | Traces the import chains for debugging. | `False` |
+| `--graph` | Generates a DOT graph of the import dependencies. | `False` |
+| `--dot-file` | The path to the output DOT file. | N/A |
+| `--allow-root` | Allows the tool to be run as the root user. | `False` |
+| `--show-env` | Shows the environment variables at the start. | `False` |
+| `--enable-telemetry` | Enables production telemetry for performance tracking. | `False` |
+| `--enable-cache` | Enables caching of results to speed up subsequent runs. | `False` |
+| `--generate-fixes` | Generates automated fixes for import errors. | `False` |
+| `--fix-output` | The output file for the automated fixes in JSON format. | N/A |
+| `--no-safe-mode` | Disables safe mode, allowing imports from outside the virtual environment. | `False` |
+| `--no-safe-skip` | Does not auto-skip imports when not in a virtual environment with safe mode active. | `False` |
+| `--max-scan-results` | The maximum number of results for repository scans. | `200` |
+| `--version` | Shows the version of the tool. | N/A |
 
+> **Note**: For a full list of options, run `importdoc --help`.
 
-Run full help:
+---
 
-importdoc --help
+### 🏗️ Architecture
 
+```
+importdoc/
+├── src/
+│   └── importdoc/
+│       ├── __init__.py
+│       ├── cli.py         # CLI entry point and argument parsing
+│       └── modules/
+│           ├── diagnostics.py # Core diagnostic logic
+│           └── ...        # Other utility modules
+└── pyproject.toml     # Project metadata and dependencies
+```
+
+The core logic resides in `src/importdoc/modules/diagnostics.py`, which is responsible for import analysis, subprocess management, and report generation. The CLI entry point, `src/importdoc/cli.py`, handles argument parsing and initializes the diagnostic process.
+
+---
+
+### 🗺️ Roadmap
+
+- **Completed**:
+  - [x] Subprocess-safe imports
+  - [x] Circular dependency detection
+  - [x] AST-based symbol resolution
+  - [x] Automated fix suggestions
+  - [x] CI-ready JSON output
+
+- **Upcoming**:
+  - [ ] Interactive HTML reports
+  - [ ] Plugin architecture for custom checks
+  - [ ] Deeper integration with IDEs
 
 ---
 
@@ -182,17 +205,11 @@ importdoc yourpackage --dir ./src
 
 ---
 
-🤝 Contributing
+### 🤝 Contributing & License
 
-PRs & issues welcome!
+Contributions are welcome! Please feel free to submit a pull request or open an issue.
 
-
----
-
-📄 License
-
-MIT © 2025
-
+This project is licensed under the MIT License. See the `LICENSE` file for details.
 
 ---
 
