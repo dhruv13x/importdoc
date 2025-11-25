@@ -1,3 +1,5 @@
+# src/importdoc/modules/config.py
+
 import os
 import re
 from dataclasses import dataclass, field

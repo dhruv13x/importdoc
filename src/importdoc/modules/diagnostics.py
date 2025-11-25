@@ -1,3 +1,5 @@
+# src/importdoc/modules/diagnostics.py
+
 import time
 import sys
 from pathlib import Path

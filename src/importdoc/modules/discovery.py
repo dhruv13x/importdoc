@@ -1,3 +1,5 @@
+# src/importdoc/modules/discovery.py
+
 import importlib.util
 import os
 import sys
