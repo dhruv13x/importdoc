@@ -126,7 +126,9 @@ class ErrorAnalyzer:
             else:
                 context["type"] = "external_dependency"
                 pips = suggest_pip_names(missing_mod)
-                context["suggestions"].extend([f"pip install {p}" for p in pips])
+                # Limit pip suggestions to avoid noise
+                if pips:
+                    context["suggestions"].append(f"pip install {pips[0]}")
                 context["suggestions"].extend(
                     [
                         "Check requirements.txt/setup.py",
@@ -160,12 +162,15 @@ class ErrorAnalyzer:
             if name_match:
                 name, from_mod = name_match.groups()
                 context["type"] = "missing_name"
-                context["suggestions"] = [
+                # Primary suggestions (generic) - add these last if we find specific ones?
+                # For now, add them, but we will limit total output later.
+                generic_suggestions = [
                     f"Check if '{name}' defined in '{from_mod}'",
                     "Verify spelling/case",
                     "Check circular dependencies",
-                    "Examine __all__ if present",
                 ]
+                context["suggestions"].extend(generic_suggestions)
+
                 source_path = find_module_file_path(from_mod)
                 if source_path:
                     symbols = analyze_ast_symbols(source_path)
@@ -207,6 +212,8 @@ class ErrorAnalyzer:
                     )
 
                     correct_module = None
+                    potential_imports = []
+                    
                     if defs:
                         for p, ln, kind in defs:
                             context["evidence"].append(
@@ -227,11 +234,16 @@ class ErrorAnalyzer:
                                         else:
                                             parts = list(rel.parts[:-1]) + [rel.stem]
                                         mod = ".".join(parts)
-                                        suggestion = f"Possible correct import: from {mod} import {name}"
-                                        if suggestion not in context["suggestions"]:
-                                            context["suggestions"].append(suggestion)
-                                        if not correct_module:
-                                            correct_module = mod
+                                        
+                                        # Prioritize:
+                                        # 1. Not tests
+                                        # 2. Shorter paths
+                                        priority = 0
+                                        if "test" in mod.lower():
+                                            priority += 10
+                                        priority += len(parts)
+                                        
+                                        potential_imports.append((priority, mod))
                                         break
                                     except Exception:
                                         pass
@@ -241,6 +253,23 @@ class ErrorAnalyzer:
                         context["evidence"].append(
                             f"No definition of '{name}' found in repo (AST scan)."
                         )
+
+                    # Sort and deduplicate potential imports
+                    potential_imports.sort(key=lambda x: x[0])
+                    unique_mods = []
+                    seen_mods = set()
+                    for _, mod in potential_imports:
+                        if mod not in seen_mods and mod != from_mod:
+                            seen_mods.add(mod)
+                            unique_mods.append(mod)
+                    
+                    # Take top 3
+                    for mod in unique_mods[:3]:
+                        suggestion = f"Possible correct import: from {mod} import {name}"
+                        if suggestion not in context["suggestions"]:
+                            context["suggestions"].insert(0, suggestion) # Prepend high-value suggestions
+                        if not correct_module:
+                            correct_module = mod
 
                     if usages:
                         for p, ln, kind in usages:
@@ -295,6 +324,17 @@ class ErrorAnalyzer:
             context["suggestions"].append(
                 "Complete the import statement with ) and the required symbols"
             )
+
+        # Final cleanup: Limit total suggestions to avoid overwhelming the user
+        # Ensure unique
+        seen_suggestions = set()
+        final_suggestions = []
+        for s in context["suggestions"]:
+            if s not in seen_suggestions:
+                seen_suggestions.add(s)
+                final_suggestions.append(s)
+        
+        context["suggestions"] = final_suggestions[:5]
 
         return context
 
