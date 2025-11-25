@@ -11,6 +11,7 @@ from importdoc.modules.telemetry import TelemetryCollector
 from importdoc.modules.cache import DiagnosticCache
 from pathlib import Path
 import sys
+import importlib
 
 class TestImportRunner(unittest.TestCase):
     def setUp(self):
@@ -157,6 +158,99 @@ class TestImportRunner(unittest.TestCase):
                  self.runner.run_imports({"foo"}, Path("."), None)
 
         self.assertIn("foo", self.runner.imported_modules)
+
+
+class TestImportRunnerCoverage(unittest.TestCase):
+    def setUp(self):
+        self.config = DiagnosticConfig(allow_root=True)
+        self.reporter = MagicMock(spec=DiagnosticReporter)
+        self.analyzer = MagicMock(spec=ErrorAnalyzer)
+        self.telemetry = MagicMock(spec=TelemetryCollector)
+        self.cache = MagicMock(spec=DiagnosticCache)
+        self.runner = ImportRunner(self.config, self.reporter, self.analyzer, self.telemetry, self.cache)
+
+    def test_tqdm_import_error(self):
+        with patch.dict("sys.modules", {"tqdm": None}):
+            importlib.reload(sys.modules["importdoc.modules.runner"])
+            self.assertIsNotNone(ImportRunner)
+
+    def test_dev_trace_disables_parallel(self):
+        self.runner.config.parallel = 2
+        self.runner.config.dev_trace = True
+        self.runner.run_imports(set(), Path("."), None)
+        self.reporter.log.assert_any_call(
+            "Dev trace disables parallel; running sequential.", level="WARNING"
+        )
+
+    def test_continue_on_error(self):
+        self.runner.config.continue_on_error = False
+        self.cache.get.return_value = None
+        with patch(
+            "importdoc.modules.runner.import_module_worker",
+            side_effect=Exception("test error"),
+        ):
+            self.analyzer.calculate_confidence.return_value = (0, "low")
+            result = self.runner.run_imports({"foo", "bar"}, Path("."), None)
+        self.assertFalse(result)
+
+    def test_parallel_run_exception(self):
+        self.runner.config.parallel = 1
+        self.runner.config.dev_trace = False
+        self.cache.get.return_value = None
+        with patch(
+            "concurrent.futures.Future.result", side_effect=Exception("test error")
+        ):
+            self.analyzer.calculate_confidence.return_value = (0, "low")
+            result = self.runner.run_imports({"foo"}, Path("."), None)
+        self.assertFalse(result)
+
+    def test_progress_bar_close_exception(self):
+        self.cache.get.return_value = None
+        with patch("importdoc.modules.runner.tqdm") as mock_tqdm:
+            mock_tqdm.return_value.close.side_effect = Exception("close error")
+            self.runner.run_imports(set(), Path("."), None)
+
+    def test_unload_module(self):
+        self.config.unload = True
+        self.cache.get.return_value = None
+        with patch("importdoc.modules.runner.import_module_worker", return_value={"success": True, "time_ms": 100}):
+            with patch.dict("sys.modules", {"foo": MagicMock()}):
+                self.runner.run_imports({"foo"}, Path("."), None)
+        self.assertNotIn("foo", sys.modules)
+
+    def test_local_module_error_log(self):
+        self.cache.get.return_value = None
+        self.analyzer.analyze.return_value = {"type": "local_module"}
+        self.analyzer.calculate_confidence.return_value = (0, "low")
+        with patch("importdoc.modules.runner.import_module_worker", return_value={"success": False, "error": "err"}):
+            self.runner.run_imports({"foo"}, Path("."), None)
+
+        found = False
+        for call_args in self.reporter.log.call_args_list:
+            if "Development Tips" in call_args[0][0]:
+                found = True
+                break
+        self.assertTrue(found)
+
+    def test_install_tracer_twice(self):
+        self.runner._install_import_tracer()
+        self.runner._install_import_tracer()
+        self.assertIsNotNone(self.runner._original_import)
+        self.runner._uninstall_import_tracer()
+
+    def test_tracer_exception(self):
+        self.runner._install_import_tracer()
+        self.runner._import_stack.append("root")
+        with self.assertRaises(ImportError):
+            __import__("nonexistent_module")
+        self.runner._uninstall_import_tracer()
+        self.reporter.log.assert_any_call(
+            "FAILURE CHAIN: root -> nonexistent_module", level="ERROR"
+        )
+
+    def test_uninstall_tracer_no_original(self):
+        self.runner._original_import = None
+        self.runner._uninstall_import_tracer()
 
 
 if __name__ == "__main__":
