@@ -1,63 +1,100 @@
-# === Python / Virtual Environments ===
+# Python-specific .gitignore
+# Created by merging your project files and keeping only Python-relevant rules.
+# Kept per-project entries: .autoheader_cache, _version.py, test env files.
+#
+# Notes:
+# - Removed Node/JS, Composer/PHP, and other language-specific ignores.
+# - DID NOT ignore data/ datasets/ raw_data/ processed_data/ output/ results/ archive/
+#   (these are often used in Python projects and should be tracked unless you want them ignored).
 
-# special type
-safe_toolchain*.jso*
-*_progress.json
-*_all_code_dump_*.*
-bot_platform_all_code_dump_*.*
-
-# typical venv folders
+# === Virtual environments ===
+# common venv directories
 venv/
 .venv/
+env/
 myenv/
 __pypackages__/
 
-# python env files
-.env
-.env.*
-.env.local
-.env.test
-local.settings.json
-.envrc
-
-# pyenv / pyproject
-*.pyenv
-.python-version
-.tool-versions
-
-# bytecode / caches
+# === Python caches / bytecode / compiled ===
 __pycache__/
 *.py[cod]
 *$py.class
 *.pyc
+*.pyo
+*.pyd
 
-# pip/build metadata
+# C extensions, wheels, build outputs
+*.so
+*.pyd
+*.egg
+*.whl
+
+# pip / build metadata
 pip-wheel-metadata/
 *.egg-info/
-*.egg
 build/
 dist/
+build/lib*/
 
-# installers / wheels
-*.whl
-*.tar.gz
-*.zip
+# === Python env & local settings ===
+.env
+.env.*
+.env.local
+.env.test
+.envrc
+local.settings.json
 
-# === Dependencies / Node / JS caches ===
-node_modules/
-.pnpm-store/
+# pyenv / python-version tooling
+.python-version
+.tool-versions
+*.pyenv
+
+# === Testing / coverage / CI artifacts ===
+.pytest_cache/
+.coverage
+coverage/
+coverage.xml
+htmlcov/
+.mypy_cache/
+.tox/
+.nox/
 .cache/
-.parcel-cache/
-.next/
-.nuxt/
-.turbo/
-out/
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
 
-# === Secrets / keys / cloud creds (DO NOT COMMIT) ===
-# env and credential files
+# Keep explicit test env files from your project
+tests/integration/test.env
+tests/e2e/e2e.env
+
+# === Notebooks / Jupyter ===
+.ipynb_checkpoints/
+*.ipynb_checkpoints
+jupyter_runtime/
+runtime/
+.nbgrader/
+
+# === IDE / Editor files & OS metadata ===
+.vscode/
+.idea/
+.ropeproject/
+.project
+.classpath
+.settings/
+*.sublime-project
+*.sublime-workspace
+
+# Mac/Windows system files
+.DS_Store
+Thumbs.db
+desktop.ini
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+
+# Editor backup / swap
+*~
+.#*
+*.swp
+
+# === Secrets / credentials (DO NOT COMMIT) ===
 secrets.json
 credentials
 credentials.json
@@ -72,23 +109,24 @@ private.key
 keys.json
 token.json
 
-# cloud provider
-.aws/
-.gcloud/
-.azure/
-.kube/
-kubeconfig
-kube_config
-.docker/config.json
-.vault/
+# SSH / GPG / vault
 .ssh/
 .ssh/id_*
 .gnupg/
+.vault/
 
-# CI / local tooling caches that may contain tokens
-*.kdbx
+# Docker related (useful when projects include Dockerfiles)
+.docker/
+.docker/config.json
+docker-compose.override.yml
+.dockerignore
 
-# === Logs / temp files / DB ===
+# Terraform / infra state (optional but common)
+.terraform/
+*.tfstate*
+*.tfstate.backup
+
+# === Logs / temp / local artifacts ===
 *.log
 *.log.*
 *.tmp
@@ -98,139 +136,35 @@ kube_config
 *.db
 *.sqlite3
 *.sqlite3-journal
-coverage/
-coverage.xml
 *.lcov
-
-# === Test / coverage / caches ===
-.coverage
-htmlcov/
-.pytest_cache/
-.mypy_cache/
-
-# === Notebooks ===
-.ipynb_checkpoints/
-*.ipynb_checkpoints
-jupyter_runtime/
-runtime/
-.nbgrader/
-
-# === Editors / OS files ===
-.vscode/
-.idea/
-.ropeproject/
-.classpath
-.project
-.settings/
-.DS_Store
-Thumbs.db
-ehthumbs.db
-.Spotlight-V100
-.Trashes
-desktop.ini
-
-# === IDE / workspace specific files ===
-*.sublime-project
-*.sublime-workspace
-
-# === Infrastructure / containers / terraform ===
-.docker/
-docker-compose.override.yml
-.docker/
-*.tar
-.dockerignore
-.vagrant/
-.serverless/
-.terraform/
-*.tfstate*
-*.tfstate.backup
-
-# Docker image tarballs and docker client config
-*.tar
-.docker/config.json
-
-# === Binaries / compiled objects ===
-*.exe
-*.dll
-*.so
-*.dylib
-*.o
-*.obj
-*.class
-*.jar
-*.war
-*.ear
-
-# Python extension builds
-build/
-build/lib*/
-*.so
-
-# === Machine learning / model files / large data ===
-models/
-models/*.bin
-*.ckpt
-*.pth
-*.pt
-*.h5
-*.safetensors
-*.onnx
-*.pb
-*.hdf5
-
-# datasets / data outputs
-data/
-datasets/
-raw_data/
-processed_data/
-output/
-results/
-archive/
-*.csv
-*.tsv
-
-# media / user content
-*.mp3
-*.wav
-*.mp4
-*.mov
-*.avi
-*.mkv
-*.iso
-*.bin
-
-# === Misc / backups / installers ===
-*~
-.#*
-*.swp
-*.msi
-*.7z
 *.gz
 
-# === Composer / PHP / vendor ===
-vendor/
-composer.phar
+# === Archives / build artifacts you might not want in VCS ===
+*.tar.gz
+*.zip
+*.tar
+*.7z
+*.msi
 
-# === Password/key stores / OS keychain ===
-.password-store/
-.keychain/
-.kwallet/
-
-# === Misc local config / tooling ===
-.npmrc
-.yarnrc
+# === Package managers / metadata (Python only)
 .pypirc
 
-# === Logs rotated/compressed ===
-*.log.*
-*.gz
+# === Project/tool-specific entries seen in your repos ===
+.autoheader_cache
+_version.py
 
-# === CI / workflows local overrides ===
-.circleci/
-.github/workflows/*.local.yml
+# Special patterns used by your projects (kept because they were explicit in your repos)
+safe_toolchain*.jso*
+*_progress.json
+*_all_code_dump_*.*
+bot_platform_all_code_dump_*.*
+*_all_create_dump_*.*
+*_create_dump_*
 
-# === Optional: Lockfiles (keep for reproducibility unless you explicitly decide otherwise) ===
+# Optional lockfiles (uncomment if you want to ignore them)
 # package-lock.json
 # yarn.lock
 # Pipfile.lock
 # poetry.lock
+
+# End with a newline
