@@ -4,6 +4,7 @@ import os
 import unittest
 from pathlib import Path
 from unittest.mock import MagicMock, patch
+import importlib
 
 from importdoc.modules.utils import (
     _format_evidence_item,
@@ -15,6 +16,7 @@ from importdoc.modules.utils import (
     safe_read_text,
     suggest_pip_names,
 )
+from importdoc.modules import utils
 
 
 class TestUtilsExtended(unittest.TestCase):
@@ -194,6 +196,49 @@ class TestUtilsExtended(unittest.TestCase):
 
         import shutil
         shutil.rmtree(root)
+
+
+class TestUtilsCoverage(unittest.TestCase):
+    def test_importlib_metadata_exception(self):
+        with patch.dict("sys.modules", {"importlib.metadata": None}):
+            importlib.reload(utils)
+            self.assertIsNone(utils.importlib_metadata)
+        # Restore the module
+        importlib.reload(utils)
+
+    def test_safe_read_text_io_error(self):
+        path = MagicMock(spec=Path)
+        path.read_text.side_effect = IOError
+        self.assertIsNone(utils.safe_read_text(path))
+
+    def test_analyze_ast_symbols_unsupported_all(self):
+        path = Path("test_unsupported_all.py")
+        path.write_text("__all__ = 1")
+        result = utils.analyze_ast_symbols(path)
+        self.assertEqual(result["all"], "unsupported")
+        os.remove(path)
+
+    def test_find_module_file_path_no_origin(self):
+        with patch("importlib.util.find_spec") as mock_find_spec:
+            mock_find_spec.return_value.origin = None
+            self.assertIsNone(utils.find_module_file_path("foo"))
+
+    def test_find_module_file_path_resources_error(self):
+        with patch("importlib.resources.files", side_effect=Exception):
+            self.assertIsNone(utils.find_module_file_path("foo"))
+
+    def test_find_symbol_definitions_in_repo_ignored_path(self):
+        with patch("src.importdoc.modules.utils._is_ignored_path", return_value=True):
+            self.assertEqual(utils.find_symbol_definitions_in_repo(Path("."), "foo"), [])
+
+    def test_find_import_usages_in_repo_ignored_path(self):
+        with patch("src.importdoc.modules.utils._is_ignored_path", return_value=True):
+            self.assertEqual(utils.find_import_usages_in_repo(Path("."), "foo"), [])
+
+    def test_find_similar_modules_empty_dir_name(self):
+        with patch("pathlib.Path.rglob") as mock_rglob:
+            mock_rglob.return_value = [MagicMock(is_dir=lambda: True, name="")]
+            self.assertEqual(utils.find_similar_modules(Path("."), "foo"), [])
 
 
 if __name__ == "__main__":

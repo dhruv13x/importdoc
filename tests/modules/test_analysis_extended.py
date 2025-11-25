@@ -5,7 +5,7 @@ import unittest
 import sys
 from unittest.mock import MagicMock, patch
 from pathlib import Path
-from importdoc.modules.analysis import ErrorAnalyzer
+from importdoc.modules.analysis import ErrorAnalyzer, _format_evidence_item
 from importdoc.modules.config import DiagnosticConfig
 
 class TestErrorAnalyzer(unittest.TestCase):
@@ -151,6 +151,44 @@ class TestErrorAnalyzer(unittest.TestCase):
         # Check if suggestions contain the discovered module
         found_suggestion = any("from baz import foo" in s for s in context["suggestions"])
         self.assertTrue(found_suggestion)
+
+    def test_uncovered_branches(self):
+        # Test for _format_evidence_item exception
+        with patch("pathlib.Path.cwd", side_effect=Exception("cwd error")):
+            result = _format_evidence_item(Path("/nonexistent/path"), 1, "kind")
+        self.assertIn("/nonexistent/path", result)
+
+        # Test for analyze with no module named and no match
+        error = ModuleNotFoundError("no module named 'foo'")
+        context = self.analyzer.analyze("foo", error, None, Path("."), None, [])
+        self.assertEqual(context["type"], "external_dependency")
+
+        # Test for analyze with cannot import name and ast error
+        with patch("importdoc.modules.analysis.find_module_file_path", return_value=Path("file.py")):
+            with patch("importdoc.modules.analysis.analyze_ast_symbols", return_value={"error": "some error"}):
+                error = ImportError("cannot import name 'bar' from 'foo'")
+                context = self.analyzer.analyze("foo", error, None, Path("."), None, [])
+        self.assertIn("AST error: some error", context["evidence"])
+
+        # Test for analyze with cannot import name and __all__
+        with patch("importdoc.modules.analysis.find_module_file_path", return_value=Path("file.py")):
+            with patch("importdoc.modules.analysis.analyze_ast_symbols", return_value={"all": ["bar"]}):
+                error = ImportError("cannot import name 'foo' from 'bar'")
+                context = self.analyzer.analyze("bar", error, None, Path("."), None, [])
+        self.assertIn("__all__: ['bar']", context["evidence"])
+
+        # Test for analyze with repo scan fails
+        with patch("importdoc.modules.analysis.find_symbol_definitions_in_repo", side_effect=Exception("scan failed")):
+            error = ImportError("cannot import name 'foo' from 'bar'")
+            context = self.analyzer.analyze("bar", error, None, Path("."), None, [])
+        self.assertIn("Repo scan failed: scan failed (tool continued safely)", context["evidence"])
+
+        # Test for analyze with finds usages
+        with patch("importdoc.modules.analysis.find_import_usages_in_repo", return_value=[(Path("file.py"), 1, "from-import")]):
+            error = ImportError("cannot import name 'foo' from 'bar'")
+            context = self.analyzer.analyze("bar", error, None, Path("."), None, [])
+        self.assertIn("file.py:1: from-import", context["evidence"])
+
 
 if __name__ == "__main__":
     unittest.main()
