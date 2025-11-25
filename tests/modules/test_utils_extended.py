@@ -228,11 +228,11 @@ class TestUtilsCoverage(unittest.TestCase):
             self.assertIsNone(utils.find_module_file_path("foo"))
 
     def test_find_symbol_definitions_in_repo_ignored_path(self):
-        with patch("src.importdoc.modules.utils._is_ignored_path", return_value=True):
+        with patch("importdoc.modules.utils._is_ignored_path", return_value=True):
             self.assertEqual(utils.find_symbol_definitions_in_repo(Path("."), "foo"), [])
 
     def test_find_import_usages_in_repo_ignored_path(self):
-        with patch("src.importdoc.modules.utils._is_ignored_path", return_value=True):
+        with patch("importdoc.modules.utils._is_ignored_path", return_value=True):
             self.assertEqual(utils.find_import_usages_in_repo(Path("."), "foo"), [])
 
     def test_find_similar_modules_empty_dir_name(self):

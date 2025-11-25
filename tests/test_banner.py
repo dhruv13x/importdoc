@@ -1,6 +1,6 @@
 import unittest
 from unittest.mock import patch
-from src.importdoc import banner
+from importdoc import banner
 import os
 
 class TestBanner(unittest.TestCase):
