@@ -98,14 +98,17 @@ def test_handle_error_no_module_named():
     # We need to supply context to _handle_error implicitly via state or mocks
     # But _handle_error takes args.
     # Warning: _handle_error calls reporter.log, which might fail if not mocked or if output is restricted.
-    diagnostic.runner._handle_error("my_module", Exception("No module named 'my_module'"))
+    # ImportRunner delegates to processor
+    diagnostic.runner.processor.set_context(Path.cwd(), None, [])
+    diagnostic.runner.processor.handle_error("my_module", Exception("No module named 'my_module'"))
     assert len(diagnostic.runner.failed_modules) == 1
     assert diagnostic.runner.failed_modules[0][0] == "my_module"
     assert "No module named 'my_module'" in diagnostic.runner.failed_modules[0][1]
 
 def test_handle_error_cannot_import_name():
     diagnostic = ImportDiagnostic(allow_root=True)
-    diagnostic.runner._handle_error(
+    diagnostic.runner.processor.set_context(Path.cwd(), None, [])
+    diagnostic.runner.processor.handle_error(
         "my_module", Exception("cannot import name 'my_symbol' from 'my_module'")
     )
     assert len(diagnostic.runner.failed_modules) == 1
@@ -425,14 +428,15 @@ def test_init_as_root_with_allow_root(mock_geteuid):
 def test_process_import_result_success():
     diagnostic = ImportDiagnostic(allow_root=True)
     result = {"success": True, "time_ms": 10.0}
-    diagnostic.runner._process_import_result("my_module", result)
+    diagnostic.runner.processor.process_result("my_module", result)
     assert "my_module" in diagnostic.runner.imported_modules
 
 def test_process_import_result_failure():
     diagnostic = ImportDiagnostic(allow_root=True)
     result = {"success": False, "error": "Test error", "tb": "Traceback"}
-    with patch.object(diagnostic.runner, "_handle_error") as mock_handle_error:
-        diagnostic.runner._process_import_result("my_module", result)
+    # Need to patch handle_error on processor
+    with patch.object(diagnostic.runner.processor, "handle_error") as mock_handle_error:
+        diagnostic.runner.processor.process_result("my_module", result)
         mock_handle_error.assert_called_once()
 
 
@@ -551,7 +555,8 @@ class TestDiagnostics(unittest.TestCase):
              mock_discover.return_value = DiscoveryResult({"os"}, {"os":[]}, [], set())
              with patch.object(diagnostic.runner, "run_imports") as mock_run:
                  # mock runner to not fail
-                 diagnostic.runner.failed_modules = [] 
+                 # We need to set failed_modules on the processor since runner delegates to it
+                 diagnostic.runner.processor.failed_modules = []
                  success = diagnostic.run_diagnostic("os")
                  self.assertTrue(success)
 

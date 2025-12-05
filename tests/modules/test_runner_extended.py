@@ -37,6 +37,8 @@ class TestImportRunner(unittest.TestCase):
 
     def test_run_imports_failed_cached(self):
         self.cache.get.return_value = {"success": False, "error": "failed", "time_ms": 100}
+        self.analyzer.analyze.return_value = {"type": "unknown"}
+        self.analyzer.calculate_confidence.return_value = (0, "low")
         with patch("importdoc.modules.runner.find_module_file_path", return_value=Path("foo.py")):
              result = self.runner.run_imports({"foo"}, Path("."), None)
         self.assertFalse(result)
@@ -87,7 +89,12 @@ class TestImportRunner(unittest.TestCase):
 
     def test_progress_bar_fallback(self):
         # Mock tqdm to be None in runner module
-        with patch("importdoc.modules.runner.tqdm", None):
+        # Mock import_module_worker to return a valid result
+        # Also ensure cache returns None so it tries to run worker
+        self.cache.get.return_value = None
+        with patch("importdoc.modules.runner.tqdm", None), \
+             patch("importdoc.modules.runner.import_module_worker", return_value={"success": True, "time_ms": 100}), \
+             patch("importdoc.modules.runner.find_module_file_path", return_value=Path("foo.py")):
              self.runner.run_imports({"foo"}, Path("."), None)
         # We can't easily verify _DummyProgress usage without mocking internal logic
         # but running it without error covers the code path.
