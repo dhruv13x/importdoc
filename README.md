@@ -73,6 +73,8 @@ importdoc your_package
 - 📦 **Cache & telemetry**: Includes an optional cache and performance metrics to speed up subsequent runs.
 - 🛡️ **Safe mode**: Avoids dangerous imports outside the virtual environment by default.
 - 📈 **Graph export**: Generates a DOT dependency graph for visualization with Graphviz.
+- 📊 **Interactive HTML Reports**: Generates self-contained HTML reports for exploring import graphs interactively.
+- ⚙️ **Configuration File Support**: Reads settings from `pyproject.toml` or `.importdoc.rc` for easy configuration management.
 - **Enhanced `no module named` diagnosis**: **God Level** Parses import symbols from the AST to suggest correct paths based on symbol definitions, providing more accurate and actionable insights.
 - 🕵️ **Fuzzy module search**: **God Level** Enhanced search for missing modules and incomplete import detection.
 
@@ -114,6 +116,7 @@ You can configure `importdoc` behavior using standard environment variables for 
 | `--no-safe-mode` | Disables safe mode, allowing imports from outside the virtual environment. | `False` |
 | `--no-safe-skip` | Do not auto-skip imports if not in venv when safe mode active. | `False` |
 | `--max-scan-results` | The maximum number of results for repository scans. | `200` |
+| `--html` | Generates an interactive HTML report of the import graph. | `False` |
 | `--version` | Shows the version of the tool. | N/A |
 
 > **Note**: For a full list of options, run `importdoc --help`.

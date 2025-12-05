@@ -27,8 +27,8 @@
 - [x] **Performance Optimization**: Parallel import execution (`--parallel`) for large codebases.
 - [x] **Automated Fix Generation**: Generate JSON patches for common import errors (`--generate-fixes`).
 - [x] **Graph Export**: Generate DOT files for dependency visualization (`--graph`).
-- [ ] **Interactive HTML Reports**: Create self-contained HTML reports for exploring import graphs interactively.
-- [ ] **Configuration File Support**: Load settings from `pyproject.toml` or `.importdoc.rc` instead of just CLI args.
+- [x] **Interactive HTML Reports**: Create self-contained HTML reports for exploring import graphs interactively.
+- [x] **Configuration File Support**: Load settings from `pyproject.toml` or `.importdoc.rc` instead of just CLI args.
 
 ---
 

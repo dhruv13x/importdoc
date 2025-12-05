@@ -45,6 +45,7 @@ class ImportDiagnostic:
         safe_mode: bool = True,
         safe_skip_imports: bool = True,
         max_scan_results: int = 200,
+        html: bool = False,
     ):
         self.config = DiagnosticConfig(
             continue_on_error=continue_on_error,
@@ -72,6 +73,7 @@ class ImportDiagnostic:
             safe_mode=safe_mode,
             safe_skip_imports=safe_skip_imports,
             max_scan_results=max_scan_results,
+            html=html,
         )
 
         self.reporter = DiagnosticReporter(self.config)
@@ -199,5 +201,16 @@ class ImportDiagnostic:
         if self.config.graph and self.config.dot_file and self.runner.edges:
             failed_names = {m for m, _ in self.runner.failed_modules}
             self.reporter.export_graph(self.runner.edges, failed_names)
+
+        if self.config.html:
+            failed_names = {m for m, _ in self.runner.failed_modules}
+            self.reporter.export_html(
+                self.runner.edges,
+                failed_names,
+                package_name,
+                self.runner.imported_modules,
+                discovery_result.skipped_modules,
+                len(discovery_result.discovery_errors) > 0 or len(self.runner.failed_modules) > 0
+            )
 
         return len(self.runner.failed_modules) == 0 and len(discovery_result.discovery_errors) == 0
