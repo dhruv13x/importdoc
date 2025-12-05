@@ -6,7 +6,7 @@
 
 <!-- Package Info -->
 [![PyPI version](https://img.shields.io/pypi/v/importdoc.svg)](https://pypi.org/project/importdoc/)
-[![Python](https://img.shields.io/badge/python-3.8%2B-blue.svg)](https://www.python.org/)
+[![Python](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://www.python.org/)
 ![Wheel](https://img.shields.io/pypi/wheel/importdoc.svg)
 [![Release](https://img.shields.io/badge/release-PyPI-blue)](https://pypi.org/project/importdoc/)
 
@@ -27,21 +27,22 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 <!-- Docs -->
-[![Docs](https://img.shields.io/badge/docs-latest-brightgreen.svg)](https://your-docs-link)
+[![Docs](https://img.shields.io/badge/docs-latest-brightgreen.svg)](https://pypi.org/project/importdoc)
 
 </div>
-
 
 # importdoc
 
 > **Production-Ready Import Diagnostic Tool for Python**
-A hardened diagnostic tool for deep, automated import analysis in Python projects. It features subprocess-safe imports, circular dependency detection, auto-fix suggestions, AST-based symbol resolution, and CI-ready JSON output.
+>
+> A hardened diagnostic tool for deep, automated import analysis in Python projects. It features subprocess-safe imports, circular dependency detection, auto-fix suggestions, AST-based symbol resolution, and CI-ready JSON output.
 
 ---
 
-## 🚀 Quick Start (User View):
+## 🚀 Quick Start (User View)
 
 ### Prerequisites
+
 - Python 3.10+
 - `jsonschema`
 - `tqdm`
@@ -59,6 +60,8 @@ pip install importdoc
 importdoc your_package
 ```
 
+---
+
 ## ✨ Key Features
 
 - 🔍 **Import graph discovery**: Recursively maps and validates imports across a project.
@@ -71,34 +74,20 @@ importdoc your_package
 - 🛡️ **Safe mode**: Avoids dangerous imports outside the virtual environment by default.
 - 📈 **Graph export**: Generates a DOT dependency graph for visualization with Graphviz.
 - **Enhanced `no module named` diagnosis**: **God Level** Parses import symbols from the AST to suggest correct paths based on symbol definitions, providing more accurate and actionable insights.
-
-
----
-
-🧪 Example Output (Success)
-
-🎉 ALL MODULES IMPORTED SUCCESSFULLY!
-✨ Production-ready: No import issues detected
-
-🚨 Example Output (Import Error)
-
-🚨 FAILED TO IMPORT: myapp.models.user
-🔥 ROOT CAUSE: ImportError: cannot import name 'Profile' from 'myapp.profile'
-📊 Evidence:
-  - myapp/profile.py:15: class Profile
-💡 Suggested Fixes:
-  1. from myapp.profile import Profile
-🧠 Confidence: 9/10
-
+- 🕵️ **Fuzzy module search**: **God Level** Enhanced search for missing modules and incomplete import detection.
 
 ---
 
-⚙️ Configuration & Advanced Usage (Dev View)
+## ⚙️ Configuration & Advanced Usage (Dev View)
+
+### Environment Variables
+
+You can configure `importdoc` behavior using standard environment variables for the underlying tools or shell environment.
 
 ### CLI/API Table
 
 | Argument | Description | Default |
-|---|---|---|
+| :--- | :--- | :--- |
 | `package` | The root package to diagnose. | N/A |
 | `--dir` | The directory of the package, which adds the parent to `sys.path`. | N/A |
 | `--continue-on-error` | Continues the diagnosis even after encountering errors. | `False` |
@@ -123,7 +112,7 @@ importdoc your_package
 | `--generate-fixes` | Generates automated fixes for import errors. | `False` |
 | `--fix-output` | The output file for the automated fixes in JSON format. | N/A |
 | `--no-safe-mode` | Disables safe mode, allowing imports from outside the virtual environment. | `False` |
-| `--no-safe-skip` | Does not auto-skip imports when not in a virtual environment with safe mode active. | `False` |
+| `--no-safe-skip` | Do not auto-skip imports if not in venv when safe mode active. | `False` |
 | `--max-scan-results` | The maximum number of results for repository scans. | `200` |
 | `--version` | Shows the version of the tool. | N/A |
 
@@ -131,81 +120,74 @@ importdoc your_package
 
 ---
 
-### 🏗️ Architecture
+## 🏗️ Architecture
 
-```
+```text
 importdoc/
 ├── src/
 │   └── importdoc/
 │       ├── __init__.py
-│       ├── cli.py         # CLI entry point and argument parsing
+│       ├── banner.py
+│       ├── cli.py             # CLI entry point and argument parsing
 │       └── modules/
-│           ├── diagnostics.py # Core diagnostic logic
-│           └── ...        # Other utility modules
-└── pyproject.toml     # Project metadata and dependencies
+│           ├── __init__.py
+│           ├── analysis.py    # AST analysis logic
+│           ├── autofix.py     # Fix generation logic
+│           ├── cache.py       # Caching mechanism
+│           ├── diagnostics.py # Core diagnostic controller
+│           ├── discovery.py   # Module discovery
+│           └── ...            # Other utility modules
+├── pyproject.toml             # Project metadata and dependencies
+└── README.md
 ```
 
 The core logic resides in `src/importdoc/modules/diagnostics.py`, which is responsible for import analysis, subprocess management, and report generation. The CLI entry point, `src/importdoc/cli.py`, handles argument parsing and initializes the diagnostic process.
 
 ---
 
-### 🗺️ Roadmap
+## 🗺️ Roadmap
 
-- **Completed**:
-  - [x] Subprocess-safe imports
-  - [x] Circular dependency detection
-  - [x] AST-based symbol resolution
-  - [x] Automated fix suggestions
-  - [x] CI-ready JSON output
+> A visionary, integration-oriented plan that categorizes features from **"Core Essentials"** to **"God Level"** ambition.
 
-- **Upcoming**:
-  - [ ] Interactive HTML reports
-  - [ ] Plugin architecture for custom checks
-  - [ ] Deeper integration with IDEs
+### Phase 1: Foundation (Q1)
+**Focus**: Core functionality, stability, security, and basic usage.
+- [x] Subprocess-safe imports
+- [x] Circular dependency detection
+- [x] AST-based symbol resolution
+- [x] CI-ready JSON output
+- [x] Enhanced error reporting for common import issues
+- [ ] Official support for Python 3.11 and 3.12
+- [ ] Comprehensive test suite with 95%+ coverage
 
----
+### Phase 2: The Standard (Q2)
+**Focus**: Feature parity with top competitors, user experience improvements, and robust error handling.
+- [ ] Interactive HTML reports for visualizing import graphs
+- [ ] Performance optimization for large codebases
+- [ ] Configuration file support (e.g., `pyproject.toml`)
+- [ ] Caching of analysis results to speed up subsequent runs
 
-🛡️ CI/CD Usage
+### Phase 3: The Ecosystem (Q3-Q4)
+**Focus**: Webhooks, API exposure, 3rd party plugins, SDK generation, and extensibility.
+- [ ] Plugin architecture for custom checks and reporters
+- [ ] IDE integration (VS Code, PyCharm) for real-time import diagnostics
+- [ ] GitHub Actions integration for automated PR comments
+- [ ] Pre-commit hook integration
 
-GitHub Actions
+### Phase 4: The Vision (GOD LEVEL)
+**Focus**: "Futuristic" features, AI integration, advanced automation, and industry-disrupting capabilities.
+- [ ] AI-powered suggestions for refactoring complex import cycles
+- [ ] Predictive dependency analysis to identify potential future conflicts
+- [ ] Automated refactoring of import statements across the entire codebase
 
-- name: Run import diagnostics
-  run: importdoc mypkg --json --continue-on-error > import_report.json
-
-
----
-
-🧠 When to Use importdoc
-
-Situation	importdoc saves you
-
-❓ Random import failures	✅ Pinpoints real source
-🔁 Circular imports	✅ Finds cycles with stack trace
-⚙️ Large refactors	✅ Detects broken import paths
-🤖 CI safety	✅ Reports without executing package runtime logic
-📦 Package release testing	✅ Ensures import reliability
-
-
-
----
-
-🧩 Project Structure Example
-
-yourproject/
- ├─ src/
- │   └─ yourpackage/
- │       ├─ __init__.py
- │       ├─ ...
- └─ tests/
-
-Run:
-
-importdoc yourpackage --dir ./src
-
+### The Sandbox (OUT OF THE BOX / OPTIONAL)
+**Focus**: Wild, creative, experimental ideas that set the project apart.
+- [ ] "Import cost" analysis to identify heavy dependencies
+- [ ] Integration with runtime profilers to connect import structure to performance
+- [ ] Gamification of code health with import-related achievements
 
 ---
 
-### 🤝 Contributing & License
+## 🤝 Contributing & License
 
 Contributions are welcome! Please feel free to submit a pull request or open an issue.
 
@@ -213,12 +195,14 @@ This project is licensed under the MIT License. See the `LICENSE` file for detai
 
 ---
 
-⭐ Support
+### ⭐ Support
 
 If you find this tool useful:
 
+```bash
 pip install importdoc
+```
 
 And give the repo a ⭐ on GitHub!
 
-https://github.com/dhruv13x/importdoc
+[https://github.com/dhruv13x/importdoc](https://github.com/dhruv13x/importdoc)
