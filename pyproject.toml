@@ -8,6 +8,12 @@ version = "3.0.2"
 description = "Advanced Python import diagnostic tool with deep analysis, subprocess isolation, auto-fixing suggestions, and CI-ready enforcement."
 readme = "README.md"
 license = { text = "MIT" }
+classifiers = [
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+]
 authors = [
   { name = "dhruv13x", email = "dhruv13x@gmail.com" }
 ]
