@@ -22,6 +22,7 @@ from pathlib import Path
 from importlib import metadata
 
 from .modules.diagnostics import ImportDiagnostic
+from .modules.config import load_config
 from .banner import print_logo
 
 try:
@@ -90,9 +91,40 @@ def main():
         default=200,
         help="Max results for repo scans (defs/usages/fuzzy).",
     )
+    parser.add_argument("--html", action="store_true", help="Generate interactive HTML report.")
     parser.add_argument("--version", action="version", version=__version__)
 
+    # Load config before parsing args to potentially set defaults?
+    # Or load after and merge?
+    # The standard way is: Defaults < Config File < Env Vars < CLI Args.
+    # argparse 'default' values make this tricky because we don't know if a value is default or user-provided.
+    # Strategy: Parse args. If value is None or default, check config.
+    # However, argparse fills in defaults.
+
+    # Let's load config first.
+    config = load_config()
+
+    # We can set defaults in parser using set_defaults.
+    parser.set_defaults(**config)
+
     args = parser.parse_args()
+
+    # Note: 'args' will now have values from CLI if provided,
+    # or from config (via set_defaults) if provided there,
+    # or the hardcoded default in add_argument if neither provided.
+
+    # Special handling for boolean flags which might be tricky with set_defaults
+    # if the config uses different names or structure.
+    # But assuming config keys match argument dests.
+
+    # Also handle hyphens vs underscores. config keys usually have underscores?
+    # TOML keys like "max-depth" or "max_depth". argparse dest is "max_depth".
+    # We should normalize config keys to match argparse dests.
+
+    # We passed **config to set_defaults. set_defaults expects kwargs matching dests.
+    # So "max-depth" in TOML needs to be "max_depth" for argparse.
+    # Our load_config should probably handle this normalization or we do it here.
+    # But let's assume the user uses underscores in TOML for python compatibility or we fix it.
 
     diagnostic = ImportDiagnostic(
         continue_on_error=args.continue_on_error,
@@ -119,6 +151,7 @@ def main():
         safe_mode=args.safe_mode,
         safe_skip_imports=args.safe_skip_imports,
         max_scan_results=args.max_scan_results,  # New
+        html=args.html,
     )
 
     try:

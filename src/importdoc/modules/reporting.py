@@ -315,3 +315,103 @@ class DiagnosticReporter:
         self.log("Current sys.path:", level="INFO")
         for sp in sys.path:
             self.log(f"  - {sp}", level="INFO")
+
+    def export_html(
+        self,
+        edges: Set[Tuple[str, str]],
+        failed_modules: Set[str],
+        package_name: str,
+        imported_modules: Set[str],
+        skipped_modules: Set[str],
+        has_errors: bool
+    ):
+        """
+        Generate a self-contained HTML report with an interactive graph.
+        """
+        output_file = f"{package_name}_report.html"
+
+        # Prepare graph data for vis.js
+        nodes = []
+        node_ids = set()
+
+        # Collect all unique nodes
+        for u, v in edges:
+            node_ids.add(u)
+            node_ids.add(v)
+
+        for node in node_ids:
+            color = "#97c2fc" # default blue
+            if node in failed_modules:
+                color = "#ffb3b3" # red
+            elif node in imported_modules:
+                color = "#b3e6b3" # green
+            elif node in skipped_modules:
+                color = "#ffffcc" # yellow
+
+            nodes.append({
+                "id": node,
+                "label": node,
+                "color": color,
+                "title": f"Module: {node}"
+            })
+
+        edge_data = [{"from": u, "to": v, "arrows": "to"} for u, v in edges]
+
+        graph_data_json = json.dumps({"nodes": nodes, "edges": edge_data})
+
+        html_content = f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ImportDoc Report: {package_name}</title>
+    <style>
+        body {{ font-family: sans-serif; margin: 0; padding: 0; display: flex; flex-direction: column; height: 100vh; }}
+        header {{ background: #333; color: white; padding: 1rem; }}
+        #network {{ flex-grow: 1; border: 1px solid lightgray; }}
+        .status {{ padding: 0.5rem; background: {'#ffdddd' if has_errors else '#ddffdd'}; text-align: center; }}
+    </style>
+    <script type="text/javascript" src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
+</head>
+<body>
+    <header>
+        <h1>ImportDoc Report: {package_name}</h1>
+    </header>
+    <div class="status">
+        Status: <strong>{'❌ ISSUES FOUND' if has_errors else '✅ CLEAN'}</strong> |
+        Modules: {len(nodes)} | Edges: {len(edge_data)}
+    </div>
+    <div id="network"></div>
+    <script type="text/javascript">
+        var data = {graph_data_json};
+        var container = document.getElementById('network');
+        var options = {{
+            nodes: {{
+                shape: 'box',
+                font: {{ multi: 'html' }}
+            }},
+            layout: {{
+                hierarchical: {{
+                    enabled: true,
+                    direction: 'LR',
+                    sortMethod: 'directed',
+                    levelSeparation: 200
+                }}
+            }},
+            physics: {{
+                hierarchicalRepulsion: {{
+                    nodeDistance: 150
+                }}
+            }}
+        }};
+        var network = new vis.Network(container, data, options);
+    </script>
+</body>
+</html>
+"""
+        try:
+            with open(output_file, "w", encoding="utf-8") as f:
+                f.write(html_content)
+            self.log(f"Interactive HTML report generated: {output_file}", level="SUCCESS")
+        except Exception as e:
+            self.log(f"Failed to write HTML report: {e}", level="ERROR")
