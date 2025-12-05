@@ -12,7 +12,7 @@
 - [x] Circular dependency detection
 - [x] AST-based symbol resolution
 - [x] CI-ready JSON output
-- [ ] Enhanced error reporting for common import issues
+- [x] Enhanced error reporting for common import issues
 - [ ] Official support for Python 3.11 and 3.12
 - [ ] Comprehensive test suite with 95%+ coverage
 

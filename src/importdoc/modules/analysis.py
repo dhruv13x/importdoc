@@ -1,6 +1,7 @@
 # src/importdoc/modules/analysis.py
 
 import ast
+import difflib
 import re
 import sys
 import traceback
@@ -198,6 +199,15 @@ class ErrorAnalyzer:
                         if symbols.get("all"):
                             context["evidence"].append(f"__all__: {symbols['all']}")
 
+                        # Fuzzy match for typo suggestions
+                        all_symbols = set()
+                        for k in ["functions", "classes", "assigns"]:
+                            all_symbols.update(symbols.get(k, set()))
+
+                        matches = difflib.get_close_matches(name, all_symbols, n=3, cutoff=0.7)
+                        for match in matches:
+                            context["suggestions"].append(f"Did you mean '{match}'?")
+
                 try:
                     repo_root = project_root
                     defs = find_symbol_definitions_in_repo(
@@ -298,6 +308,24 @@ class ErrorAnalyzer:
                 context["auto_fix"] = FixGenerator.generate_circular_import_fix(
                     import_stack + [module_name]
                 )
+
+        elif isinstance(error, AttributeError) or "attribute" in error_str:
+            context["type"] = "attribute_error"
+            # Extract attribute name
+            attr_match = re.search(r"attribute ['\"]?([^'\"]+)['\"]?", original_error)
+            attr_name = attr_match.group(1) if attr_match else None
+
+            # Check for shadowing
+            if is_standard_lib(module_name) and module_path:
+                context["type"] = "shadowing_stdlib"
+                context["evidence"].append(f"Shadows standard library module '{module_name}'")
+                context["suggestions"].extend([
+                    f"Rename your local file '{module_path.name}' to avoid conflict",
+                    "Do not use standard library names for local modules"
+                ])
+
+            if attr_name:
+                context["suggestions"].append(f"Check if '{attr_name}' is defined in '{module_name}'")
         elif any(
             k in error_str for k in ["dll load failed", "shared object", ".so", ".dll"]
         ):
