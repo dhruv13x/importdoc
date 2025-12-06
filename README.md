@@ -77,6 +77,7 @@ importdoc your_package
 - ⚙️ **Configuration File Support**: Reads settings from `pyproject.toml` or `.importdoc.rc` for easy configuration management.
 - **Enhanced `no module named` diagnosis**: **God Level** Parses import symbols from the AST to suggest correct paths based on symbol definitions, providing more accurate and actionable insights.
 - 🕵️ **Fuzzy module search**: **God Level** Enhanced search for missing modules and incomplete import detection.
+- 🔌 **Plugin Architecture**: Support for custom plugins to extend functionality and implement custom checks.
 
 ---
 
