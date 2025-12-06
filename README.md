@@ -47,6 +47,7 @@
 - `jsonschema`
 - `tqdm`
 - `rich`
+- `tomli` (for Python < 3.11)
 
 ### One-Command Installation
 
@@ -116,7 +117,7 @@ You can configure `importdoc` behavior using standard environment variables for 
 | `--fix-output` | The output file for the automated fixes in JSON format. | N/A |
 | `--no-safe-mode` | Disables safe mode, allowing imports from outside the virtual environment. | `False` |
 | `--no-safe-skip` | Do not auto-skip imports if not in venv when safe mode active. | `False` |
-| `--max-scan-results` | The maximum number of results for repository scans. | `200` |
+| `--max-scan-results` | Max results for repo scans (defs/usages/fuzzy). | `200` |
 | `--html` | Generates an interactive HTML report of the import graph. | `False` |
 | `--version` | Shows the version of the tool. | N/A |
 
@@ -138,8 +139,12 @@ importdoc/
 │           ├── analysis.py    # AST analysis logic
 │           ├── autofix.py     # Fix generation logic
 │           ├── cache.py       # Caching mechanism
+│           ├── config.py      # Configuration management
 │           ├── diagnostics.py # Core diagnostic controller
 │           ├── discovery.py   # Module discovery
+│           ├── plugin.py      # Plugin architecture
+│           ├── processor.py   # Result processing
+│           ├── reporting.py   # Report generation (Text/JSON/HTML)
 │           └── ...            # Other utility modules
 ├── pyproject.toml             # Project metadata and dependencies
 └── README.md
@@ -165,14 +170,14 @@ The core logic resides in `src/importdoc/modules/diagnostics.py`, which is respo
 
 ### Phase 2: The Standard (Q2)
 **Focus**: Feature parity with top competitors, user experience improvements, and robust error handling.
-- [ ] Interactive HTML reports for visualizing import graphs
+- [x] Interactive HTML reports for visualizing import graphs
+- [x] Configuration file support (e.g., `pyproject.toml`)
+- [x] Caching of analysis results to speed up subsequent runs
 - [ ] Performance optimization for large codebases
-- [ ] Configuration file support (e.g., `pyproject.toml`)
-- [ ] Caching of analysis results to speed up subsequent runs
 
 ### Phase 3: The Ecosystem (Q3-Q4)
 **Focus**: Webhooks, API exposure, 3rd party plugins, SDK generation, and extensibility.
-- [ ] Plugin architecture for custom checks and reporters
+- [x] Plugin architecture for custom checks and reporters
 - [ ] IDE integration (VS Code, PyCharm) for real-time import diagnostics
 - [ ] GitHub Actions integration for automated PR comments
 - [ ] Pre-commit hook integration
