@@ -47,6 +47,7 @@
 - `jsonschema`
 - `tqdm`
 - `rich`
+- `tomli` (for Python < 3.11)
 
 ### One-Command Installation
 
@@ -116,7 +117,7 @@ You can configure `importdoc` behavior using standard environment variables for 
 | `--fix-output` | The output file for the automated fixes in JSON format. | N/A |
 | `--no-safe-mode` | Disables safe mode, allowing imports from outside the virtual environment. | `False` |
 | `--no-safe-skip` | Do not auto-skip imports if not in venv when safe mode active. | `False` |
-| `--max-scan-results` | The maximum number of results for repository scans. | `200` |
+| `--max-scan-results` | Max results for repo scans (defs/usages/fuzzy). | `200` |
 | `--html` | Generates an interactive HTML report of the import graph. | `False` |
 | `--version` | Shows the version of the tool. | N/A |
 
@@ -134,27 +135,22 @@ importdoc/
 │       ├── banner.py
 │       ├── cli.py             # CLI entry point and argument parsing
 │       └── modules/
+│           ├── __init__.py
 │           ├── analysis.py    # AST analysis logic
 │           ├── autofix.py     # Fix generation logic
 │           ├── cache.py       # Caching mechanism
-│           ├── confidence.py  # Confidence scoring
 │           ├── config.py      # Configuration management
 │           ├── diagnostics.py # Core diagnostic controller
 │           ├── discovery.py   # Module discovery
-│           ├── plugin.py      # Plugin system
+│           ├── plugin.py      # Plugin architecture
 │           ├── processor.py   # Result processing
-│           ├── reporting.py   # Reporting utilities
-│           ├── runner.py      # Import runner
-│           ├── schemas.py     # JSON schemas
-│           ├── telemetry.py   # Performance telemetry
-│           ├── utils.py       # General utilities
-│           └── worker.py      # Multiprocessing worker
+│           ├── reporting.py   # Report generation (Text/JSON/HTML)
+│           └── ...            # Other utility modules
 ├── pyproject.toml             # Project metadata and dependencies
-├── README.md
-└── ROADMAP.md
+└── README.md
 ```
 
-The core logic resides in `src/importdoc/modules/diagnostics.py`, which orchestrates the diagnostic process. It delegates module discovery to `discovery.py`, imports execution to `runner.py`, and result processing to `processor.py`. The plugin system is managed by `plugin.py`, allowing for extensible checks.
+The core logic resides in `src/importdoc/modules/diagnostics.py`, which is responsible for import analysis, subprocess management, and report generation. The CLI entry point, `src/importdoc/cli.py`, handles argument parsing and initializes the diagnostic process.
 
 ---
 
@@ -169,39 +165,34 @@ The core logic resides in `src/importdoc/modules/diagnostics.py`, which orchestr
 - [x] AST-based symbol resolution
 - [x] CI-ready JSON output
 - [x] Enhanced error reporting for common import issues
-- [x] Safe Mode
-- [x] Official Python 3.11 & 3.12 Support
+- [ ] Official support for Python 3.11 and 3.12
+- [ ] Comprehensive test suite with 95%+ coverage
 
 ### Phase 2: The Standard (Q2)
 **Focus**: Feature parity with top competitors, user experience improvements, and robust error handling.
-- [x] Caching System
-- [x] Performance Optimization
-- [x] Automated Fix Generation
-- [x] Graph Export
-- [x] Interactive HTML Reports
-- [x] Configuration File Support
+- [x] Interactive HTML reports for visualizing import graphs
+- [x] Configuration file support (e.g., `pyproject.toml`)
+- [x] Caching of analysis results to speed up subsequent runs
+- [ ] Performance optimization for large codebases
 
 ### Phase 3: The Ecosystem (Q3-Q4)
 **Focus**: Webhooks, API exposure, 3rd party plugins, SDK generation, and extensibility.
-- [x] Plugin Architecture
-- [ ] GitHub Actions Integration
-- [ ] Pre-commit Hook
-- [ ] IDE Integration
+- [x] Plugin architecture for custom checks and reporters
+- [ ] IDE integration (VS Code, PyCharm) for real-time import diagnostics
+- [ ] GitHub Actions integration for automated PR comments
+- [ ] Pre-commit hook integration
 
 ### Phase 4: The Vision (GOD LEVEL)
 **Focus**: "Futuristic" features, AI integration, advanced automation, and industry-disrupting capabilities.
-- [x] Enhanced `no module named` Diagnosis
-- [x] Fuzzy Module Search
-- [ ] AI-Powered Refactoring
-- [ ] Predictive Dependency Analysis
-- [ ] Architectural Drift Detection
+- [ ] AI-powered suggestions for refactoring complex import cycles
+- [ ] Predictive dependency analysis to identify potential future conflicts
+- [ ] Automated refactoring of import statements across the entire codebase
 
 ### The Sandbox (OUT OF THE BOX / OPTIONAL)
 **Focus**: Wild, creative, experimental ideas that set the project apart.
-- [ ] "Import Cost" Analysis
-- [ ] 3D Dependency Visualization
-- [ ] Gamification
-- [ ] Runtime Profiler Integration
+- [ ] "Import cost" analysis to identify heavy dependencies
+- [ ] Integration with runtime profilers to connect import structure to performance
+- [ ] Gamification of code health with import-related achievements
 
 ---
 
