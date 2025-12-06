@@ -21,6 +21,7 @@ from .telemetry import TelemetryCollector
 from .utils import find_module_file_path
 from .worker import import_module_worker
 from .processor import ResultProcessor
+from .plugin import PluginManager, PluginContext
 
 
 class ImportRunner:
@@ -37,6 +38,7 @@ class ImportRunner:
         self.analyzer = analyzer
         self.telemetry = telemetry
         self.cache = cache
+        self.plugin_manager = PluginManager(reporter=reporter)
 
         self.processor = ResultProcessor(
             config, reporter, analyzer, telemetry, cache
@@ -176,6 +178,30 @@ class ImportRunner:
 
         if self.config.dev_trace:
             self._uninstall_import_tracer()
+
+        # Load plugins if configured
+        if self.config.plugins:
+            self.plugin_manager.load_from_config(self.config.plugins)
+
+        # Always check if plugins are present (either loaded or manually registered)
+        if self.plugin_manager.plugins:
+            plugin_context = PluginContext()
+            plugin_context.data["discovered_modules"] = discovered_modules
+            plugin_context.data["project_root"] = project_root
+            plugin_context.data["imported_modules"] = self.imported_modules
+            plugin_context.data["failed_modules"] = self.failed_modules
+            plugin_context.data["import_edges"] = self.edges
+            # Also pass the processor for more advanced access if needed
+            plugin_context.data["processor"] = self.processor
+
+            self.plugin_manager.run_checks(plugin_context)
+
+            if plugin_context.errors:
+                for error in plugin_context.errors:
+                    self.reporter.log(f"PLUGIN ERROR: [{error.type}] {error.message}", level="ERROR")
+                # If plugins report errors, we should consider this a failure
+                if not self.config.continue_on_error:
+                    return False
             
         return len(self.processor.failed_modules) == 0
 

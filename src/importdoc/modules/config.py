@@ -40,6 +40,7 @@ class DiagnosticConfig:
     safe_skip_imports: bool = True
     max_scan_results: int = 200
     html: bool = False
+    plugins: List[str] = field(default_factory=list)
 
     # Internal
     exclude_regexes: List[Pattern] = field(init=False, default_factory=list)

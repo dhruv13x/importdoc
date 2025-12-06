@@ -36,7 +36,7 @@
 
 **Focus**: Webhooks, API exposure, 3rd party plugins, SDK generation, and extensibility.
 
-- [ ] **Plugin Architecture**: Allow users to write custom checks (e.g., "ban imports from module X").
+- [x] **Plugin Architecture**: Allow users to write custom checks (e.g., "ban imports from module X").
 - [ ] **GitHub Actions Integration**: Publish a reusable GitHub Action for easy CI integration.
 - [ ] **Pre-commit Hook**: Official `.pre-commit-hooks.yaml` for local development enforcement.
 - [ ] **IDE Integration**: VS Code and PyCharm extensions for real-time diagnostics.
