@@ -14,7 +14,7 @@
 - [x] **CI-ready JSON output**: Structured output for integration with CI/CD pipelines.
 - [x] **Enhanced error reporting**: "Human-readable" diagnosis for `ImportError`, `ModuleNotFoundError`, and `AttributeError`.
 - [x] **Safe Mode**: Enforce execution within a virtual environment to prevent system pollution.
-- [ ] **Official Python 3.11 & 3.12 Support**: Verify compatibility and add to CI build matrix.
+- [x] **Official Python 3.11 & 3.12 Support**: Verify compatibility and add to CI build matrix.
 - [ ] **Comprehensive Test Suite**: Increase test coverage to 95%+ (currently targeting 85%).
 
 ---
