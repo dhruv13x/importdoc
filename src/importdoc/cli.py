@@ -126,37 +126,40 @@ def main():
     # Our load_config should probably handle this normalization or we do it here.
     # But let's assume the user uses underscores in TOML for python compatibility or we fix it.
 
-    diagnostic = ImportDiagnostic(
-        continue_on_error=args.continue_on_error,
-        verbose=args.verbose,
-        quiet=args.quiet,
-        use_emojis=not args.no_emoji,
-        log_file=args.log_file,
-        timeout=args.timeout,
-        dry_run=args.dry_run,
-        unload=args.unload,
-        json_output=args.json,
-        parallel=args.parallel,
-        max_depth=args.max_depth,
-        dev_mode=args.dev_mode,
-        dev_trace=args.dev_trace,
-        graph=args.graph,
-        dot_file=args.dot_file,
-        allow_root=args.allow_root,
-        show_env=args.show_env,
-        enable_telemetry=args.enable_telemetry,
-        enable_cache=args.enable_cache,
-        generate_fixes=args.generate_fixes,
-        fix_output=args.fix_output,
-        safe_mode=args.safe_mode,
-        safe_skip_imports=args.safe_skip_imports,
-        max_scan_results=args.max_scan_results,  # New
-        html=args.html,
-    )
-
     try:
+        diagnostic = ImportDiagnostic(
+            continue_on_error=args.continue_on_error,
+            verbose=args.verbose,
+            quiet=args.quiet,
+            use_emojis=not args.no_emoji,
+            log_file=args.log_file,
+            timeout=args.timeout,
+            dry_run=args.dry_run,
+            unload=args.unload,
+            json_output=args.json,
+            parallel=args.parallel,
+            max_depth=args.max_depth,
+            dev_mode=args.dev_mode,
+            dev_trace=args.dev_trace,
+            graph=args.graph,
+            dot_file=args.dot_file,
+            allow_root=args.allow_root,
+            show_env=args.show_env,
+            enable_telemetry=args.enable_telemetry,
+            enable_cache=args.enable_cache,
+            generate_fixes=args.generate_fixes,
+            fix_output=args.fix_output,
+            safe_mode=args.safe_mode,
+            safe_skip_imports=args.safe_skip_imports,
+            max_scan_results=args.max_scan_results,  # New
+            html=args.html,
+        )
+
         success = diagnostic.run_diagnostic(args.package, args.dir)
         sys.exit(0 if success else 1)
+    except PermissionError as e:
+        print(str(e), file=sys.stderr)
+        sys.exit(1)
     except Exception as e:
         # if logger not available, fallback to print
         try:

@@ -48,11 +48,9 @@ class DiagnosticConfig:
     def __post_init__(self):
         # Restore safety checks
         if not self.allow_root and hasattr(os, "geteuid") and os.geteuid() == 0:
-            print(
-                "❌ Refusing to run as root. Use --allow-root if you really mean it.",
-                file=sys.stderr,
+            raise PermissionError(
+                "❌ Refusing to run as root. Use --allow-root if you really mean it."
             )
-            sys.exit(1)
 
         # Restore regex compilation
         if self.exclude_patterns:
