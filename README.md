@@ -35,183 +35,185 @@
 
 > **Production-Ready Import Diagnostic Tool for Python**
 >
-> A hardened diagnostic tool for deep, automated import analysis in Python projects. It features subprocess-safe imports, circular dependency detection, auto-fix suggestions, AST-based symbol resolution, and CI-ready JSON output.
+> Advanced Python import diagnostic tool with deep analysis, subprocess isolation, auto-fixing suggestions, and CI-ready enforcement.
 
 ---
 
-## 🚀 Quick Start (User View)
+## ⚡ Quick Start (The "5-Minute Rule")
 
 ### Prerequisites
+- **Python**: 3.10+
+- **Dependencies**: `jsonschema`, `tqdm`, `rich` (installed automatically)
 
-- Python 3.10+
-- `jsonschema`
-- `tqdm`
-- `rich`
-- `tomli` (for Python < 3.11)
-
-### One-Command Installation
-
+### Install
 ```bash
 pip install importdoc
 ```
 
-### Usage Example
+### Run
+To start diagnosing your package immediately:
+```bash
+importdoc <your_package_name>
+```
+
+### Demo
+Copy and paste this snippet to audit your package and generate a visual report:
 
 ```bash
-importdoc your_package
+# Install importdoc
+pip install importdoc
+
+# Run a full diagnostic check with verbose output
+importdoc my_awesome_package --verbose
+
+# Generate an interactive HTML graph of your import structure
+importdoc my_awesome_package --html
 ```
 
 ---
 
-## ✨ Key Features
+## ✨ Features
 
-- 🔍 **Import graph discovery**: Recursively maps and validates imports across a project.
-- 🧠 **AST-based analysis**: Detects missing imports, wrong module paths, and unresolved symbols.
-- ⚡ **Subprocess safe imports**: Imports each module in a sandboxed subprocess, making it timeout-safe.
-- 🛑 **Circular import detection**: Identifies dependency cycles with detailed stack traces.
-- 🛠️ **Automated fix suggestions**: Suggests proper import paths and generates JSON patches for auto-fixing.
-- 📊 **JSON diagnostic mode**: Provides CI-friendly structured reports for easy integration.
-- 📦 **Cache & telemetry**: Includes an optional cache and performance metrics to speed up subsequent runs.
-- 🛡️ **Safe mode**: Avoids dangerous imports outside the virtual environment by default.
-- 📈 **Graph export**: Generates a DOT dependency graph for visualization with Graphviz.
-- 📊 **Interactive HTML Reports**: Generates self-contained HTML reports for exploring import graphs interactively.
-- ⚙️ **Configuration File Support**: Reads settings from `pyproject.toml` or `.importdoc.rc` for easy configuration management.
-- **Enhanced `no module named` diagnosis**: **God Level** Parses import symbols from the AST to suggest correct paths based on symbol definitions, providing more accurate and actionable insights.
-- 🕵️ **Fuzzy module search**: **God Level** Enhanced search for missing modules and incomplete import detection.
-- 🔌 **Plugin Architecture**: Support for custom plugins to extend functionality and implement custom checks.
+### Core Capabilities
+- **Import Graph Discovery**: Recursively maps and validates imports across your entire project.
+- **Subprocess Isolation**: Imports each module in a sandboxed subprocess to prevent crashes and ensure timeout safety.
+- **Circular Dependency Detection**: Identifies dependency cycles with detailed stack traces.
+
+### Performance & Security
+- **Smart Caching**: Speeds up subsequent runs by caching analysis results (`--enable-cache`).
+- **Parallel Execution**: runs imports in parallel for large codebases (`--parallel`).
+- **Safe Mode**: Enforces execution within a virtual environment to prevent system pollution.
+
+### Advanced Analysis
+- **Auto-Fix Suggestions**: Suggests proper import paths and generates JSON patches for auto-fixing errors.
+- **AST-Based Resolution**: "God Level" analysis parses source code to find undefined symbols and correct import paths.
+- **Interactive Reports**: Generates self-contained HTML reports for exploring import graphs visually.
+- **CI-Ready JSON**: Provides structured JSON output for easy integration with CI/CD pipelines.
 
 ---
 
-## ⚙️ Configuration & Advanced Usage (Dev View)
+## 🛠️ Configuration
 
-### Environment Variables
+You can configure `importdoc` using CLI arguments or a configuration file (`pyproject.toml` or `.importdoc.rc`).
 
-You can configure `importdoc` behavior using standard environment variables for the underlying tools or shell environment.
-
-### CLI/API Table
+### CLI Arguments
 
 | Argument | Description | Default |
 | :--- | :--- | :--- |
-| `package` | The root package to diagnose. | N/A |
-| `--dir` | The directory of the package, which adds the parent to `sys.path`. | N/A |
-| `--continue-on-error` | Continues the diagnosis even after encountering errors. | `False` |
-| `--dry-run` | Discovers modules without actually importing them. | `False` |
-| `--max-depth` | The maximum depth for module discovery. | N/A |
-| `--log-file` | The path to the log file. | N/A |
+| `package` | The root package to diagnose. | Required |
+| `--dir` | The directory of the package (adds parent to `sys.path`). | `None` |
+| `--config` | Path to config file (implicit: `pyproject.toml` or `.importdoc.rc`). | Auto |
 | `--verbose` | Enables detailed and extensive output. | `False` |
-| `--quiet` | Minimizes the output to only essential information. | `False` |
-| `--no-emoji` | Disables the use of emojis in the output. | `False` |
-| `--timeout` | The timeout in seconds for each import. | `0` |
-| `--unload` | Unloads modules after they are imported. | `False` |
 | `--json` | Outputs the diagnosis in JSON format. | `False` |
-| `--parallel` | The number of parallel imports to run. | `0` |
-| `--dev-mode` | Enables developer mode for additional diagnostics. | `False` |
-| `--dev-trace` | Traces the import chains for debugging. | `False` |
-| `--graph` | Generates a DOT graph of the import dependencies. | `False` |
-| `--dot-file` | The path to the output DOT file. | N/A |
-| `--allow-root` | Allows the tool to be run as the root user. | `False` |
-| `--show-env` | Shows the environment variables at the start. | `False` |
-| `--enable-telemetry` | Enables production telemetry for performance tracking. | `False` |
-| `--enable-cache` | Enables caching of results to speed up subsequent runs. | `False` |
+| `--html` | Generates an interactive HTML report. | `False` |
+| `--graph` | Generates a DOT graph of import dependencies. | `False` |
+| `--dot-file` | Path to the output DOT file. | `None` |
+| `--timeout` | Timeout in seconds for each import. | `0` (None) |
+| `--parallel` | Number of parallel imports to run. | `0` (Sequential) |
+| `--enable-cache` | Enables caching of results. | `False` |
 | `--generate-fixes` | Generates automated fixes for import errors. | `False` |
-| `--fix-output` | The output file for the automated fixes in JSON format. | N/A |
-| `--no-safe-mode` | Disables safe mode, allowing imports from outside the virtual environment. | `False` |
-| `--no-safe-skip` | Do not auto-skip imports if not in venv when safe mode active. | `False` |
-| `--max-scan-results` | Max results for repo scans (defs/usages/fuzzy). | `200` |
-| `--html` | Generates an interactive HTML report of the import graph. | `False` |
-| `--version` | Shows the version of the tool. | N/A |
+| `--fix-output` | Output file for automated fixes (JSON). | `None` |
+| `--continue-on-error`| Continues diagnosis even after encountering errors. | `False` |
+| `--dry-run` | Discovers modules without actually importing them. | `False` |
+| `--dev-mode` | Enables developer mode for additional diagnostics. | `False` |
 
-> **Note**: For a full list of options, run `importdoc --help`.
+### Configuration File (`pyproject.toml`)
+
+You can persist your configuration in `pyproject.toml` under the `[tool.importdoc]` section:
+
+```toml
+[tool.importdoc]
+verbose = true
+timeout = 5
+enable_cache = true
+exclude_patterns = ["tests/*", "migrations/*"]
+```
 
 ---
 
 ## 🏗️ Architecture
 
+### Directory Tree
+
 ```text
-importdoc/
-├── src/
-│   └── importdoc/
-│       ├── __init__.py
-│       ├── banner.py
-│       ├── cli.py             # CLI entry point and argument parsing
-│       └── modules/
-│           ├── __init__.py
-│           ├── analysis.py    # AST analysis logic
-│           ├── autofix.py     # Fix generation logic
-│           ├── cache.py       # Caching mechanism
-│           ├── config.py      # Configuration management
-│           ├── diagnostics.py # Core diagnostic controller
-│           ├── discovery.py   # Module discovery
-│           ├── plugin.py      # Plugin architecture
-│           ├── processor.py   # Result processing
-│           ├── reporting.py   # Report generation (Text/JSON/HTML)
-│           └── ...            # Other utility modules
-├── pyproject.toml             # Project metadata and dependencies
-└── README.md
+src/
+└── importdoc/
+    ├── cli.py             # CLI Entry Point
+    ├── banner.py          # Logo & Branding
+    └── modules/
+        ├── diagnostics.py # Core Controller (Orchestrator)
+        ├── discovery.py   # File & Module Discovery
+        ├── runner.py      # Subprocess Execution Logic
+        ├── analysis.py    # AST & Error Analysis
+        ├── reporting.py   # JSON/HTML/Console Output
+        ├── config.py      # Configuration Loader
+        ├── cache.py       # Caching Mechanism
+        ├── autofix.py     # Fix Generation Logic
+        └── ...
 ```
 
-The core logic resides in `src/importdoc/modules/diagnostics.py`, which is responsible for import analysis, subprocess management, and report generation. The CLI entry point, `src/importdoc/cli.py`, handles argument parsing and initializes the diagnostic process.
+### High-Level Flow
+
+1.  **CLI**: Parses arguments and loads configuration.
+2.  **Discovery**: Scans the file system to find all Python modules in the target package.
+3.  **Runner**: Iterates through discovered modules, spawning isolated subprocesses to import them safely.
+4.  **Analysis**: Captures stdout/stderr from subprocesses. If an import fails, `analysis.py` inspects the error and AST to determine the root cause (e.g., circular dependency, missing symbol).
+5.  **Reporting**: Aggregates results and outputs them to the console, JSON file, or HTML report.
+
+---
+
+## 🐞 Troubleshooting
+
+### Common Issues
+
+| Error Message | Possible Cause | Solution |
+| :--- | :--- | :--- |
+| `ModuleNotFoundError` | The package root is not in `sys.path`. | Use the `--dir` argument to specify the package location. |
+| `ImportError: cannot import name...` | Circular dependency or wrong path. | Run with `--graph` to visualize cycles or `--generate-fixes` to see suggestions. |
+| `TimeoutError` | Module takes too long to import. | Increase the timeout using `--timeout <seconds>`. |
+| `PermissionError` | Running as root (not recommended). | Use `--allow-root` if absolutely necessary. |
+
+### Debug Mode
+
+If you are facing unexpected behavior, enable verbose logging and developer traces:
+
+```bash
+importdoc my_package --verbose --dev-mode --dev-trace
+```
+
+---
+
+## 🤝 Contributing
+
+We welcome contributions! Please check out our [CONTRIBUTING.md](CONTRIBUTING.md) (if available) or follow the steps below.
+
+### Dev Setup
+
+1.  **Clone the repository**:
+    ```bash
+    git clone https://github.com/dhruv13x/importdoc.git
+    cd importdoc
+    ```
+
+2.  **Install dependencies**:
+    ```bash
+    pip install .[dev]
+    ```
+
+3.  **Run Tests**:
+    ```bash
+    python -m pytest
+    ```
 
 ---
 
 ## 🗺️ Roadmap
 
-> A visionary, integration-oriented plan that categorizes features from **"Core Essentials"** to **"God Level"** ambition.
+We are constantly improving `importdoc`. Here is a glimpse of what's coming:
 
-### Phase 1: Foundation (Q1)
-**Focus**: Core functionality, stability, security, and basic usage.
-- [x] Subprocess-safe imports
-- [x] Circular dependency detection
-- [x] AST-based symbol resolution
-- [x] CI-ready JSON output
-- [x] Enhanced error reporting for common import issues
-- [ ] Official support for Python 3.11 and 3.12
-- [ ] Comprehensive test suite with 95%+ coverage
+-   **Phase 1 (Done)**: Subprocess isolation, Circular dependency detection, JSON/HTML output.
+-   **Phase 2 (Current)**: Performance optimization (Caching, Parallelism), Configuration files.
+-   **Phase 3 (Next)**: Plugin architecture, IDE integrations (VS Code), GitHub Actions support.
+-   **Phase 4 (Vision)**: AI-powered architectural refactoring and predictive dependency analysis.
 
-### Phase 2: The Standard (Q2)
-**Focus**: Feature parity with top competitors, user experience improvements, and robust error handling.
-- [x] Interactive HTML reports for visualizing import graphs
-- [x] Configuration file support (e.g., `pyproject.toml`)
-- [x] Caching of analysis results to speed up subsequent runs
-- [ ] Performance optimization for large codebases
-
-### Phase 3: The Ecosystem (Q3-Q4)
-**Focus**: Webhooks, API exposure, 3rd party plugins, SDK generation, and extensibility.
-- [x] Plugin architecture for custom checks and reporters
-- [ ] IDE integration (VS Code, PyCharm) for real-time import diagnostics
-- [ ] GitHub Actions integration for automated PR comments
-- [ ] Pre-commit hook integration
-
-### Phase 4: The Vision (GOD LEVEL)
-**Focus**: "Futuristic" features, AI integration, advanced automation, and industry-disrupting capabilities.
-- [ ] AI-powered suggestions for refactoring complex import cycles
-- [ ] Predictive dependency analysis to identify potential future conflicts
-- [ ] Automated refactoring of import statements across the entire codebase
-
-### The Sandbox (OUT OF THE BOX / OPTIONAL)
-**Focus**: Wild, creative, experimental ideas that set the project apart.
-- [ ] "Import cost" analysis to identify heavy dependencies
-- [ ] Integration with runtime profilers to connect import structure to performance
-- [ ] Gamification of code health with import-related achievements
-
----
-
-## 🤝 Contributing & License
-
-Contributions are welcome! Please feel free to submit a pull request or open an issue.
-
-This project is licensed under the MIT License. See the `LICENSE` file for details.
-
----
-
-### ⭐ Support
-
-If you find this tool useful:
-
-```bash
-pip install importdoc
-```
-
-And give the repo a ⭐ on GitHub!
-
-[https://github.com/dhruv13x/importdoc](https://github.com/dhruv13x/importdoc)
+See [ROADMAP.md](ROADMAP.md) for the full detailed plan.
