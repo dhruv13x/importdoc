@@ -1,67 +1,61 @@
-# 🗺️ importdoc Roadmap
+# Strategic Roadmap (V3.0)
 
-> A visionary, integration-oriented plan that categorizes features from **"Core Essentials"** to **"God Level"** ambition.
-
----
-
-## Phase 1: Foundation (CRITICALLY MUST HAVE)
-
-**Focus**: Core functionality, stability, security, and basic usage.
-
-- [x] **Subprocess-safe imports**: Isolate imports in subprocesses to prevent crashes and handle timeouts.
-- [x] **Circular dependency detection**: Identify and report dependency cycles with stack traces.
-- [x] **AST-based symbol resolution**: Analyze source code to find undefined symbols and correct import paths.
-- [x] **CI-ready JSON output**: Structured output for integration with CI/CD pipelines.
-- [x] **Enhanced error reporting**: "Human-readable" diagnosis for `ImportError`, `ModuleNotFoundError`, and `AttributeError`.
-- [x] **Safe Mode**: Enforce execution within a virtual environment to prevent system pollution.
-- [x] **Official Python 3.11 & 3.12 Support**: Verify compatibility and add to CI build matrix.
-- [ ] **Comprehensive Test Suite**: Increase test coverage to 95%+ (currently targeting 85%).
+> **Goal**: A living document that balances **Innovation**, **Stability**, and **Debt**, categorized by strategic phases.
 
 ---
 
-## Phase 2: The Standard (MUST HAVE)
+## 🏁 Phase 0: The Core (Stability & Debt)
+**Goal**: Solid foundation and reliability.
 
-**Focus**: Feature parity with top competitors, user experience improvements, and robust error handling.
-
-- [x] **Caching System**: Speed up subsequent runs by caching analysis results (`--enable-cache`).
-- [x] **Performance Optimization**: Parallel import execution (`--parallel`) for large codebases.
-- [x] **Automated Fix Generation**: Generate JSON patches for common import errors (`--generate-fixes`).
-- [x] **Graph Export**: Generate DOT files for dependency visualization (`--graph`).
-- [x] **Interactive HTML Reports**: Create self-contained HTML reports for exploring import graphs interactively.
-- [x] **Configuration File Support**: Load settings from `pyproject.toml` or `.importdoc.rc` instead of just CLI args.
-
----
-
-## Phase 3: The Ecosystem (INTEGRATION & SHOULD HAVE)
-
-**Focus**: Webhooks, API exposure, 3rd party plugins, SDK generation, and extensibility.
-
-- [x] **Plugin Architecture**: Allow users to write custom checks (e.g., "ban imports from module X").
-- [ ] **GitHub Actions Integration**: Publish a reusable GitHub Action for easy CI integration.
-- [ ] **Pre-commit Hook**: Official `.pre-commit-hooks.yaml` for local development enforcement.
-- [ ] **IDE Integration**: VS Code and PyCharm extensions for real-time diagnostics.
-- [ ] **Build System Plugins**: Plugins for `hatch`, `poetry`, and `setuptools` to run checks during build.
+- [x] **Testing**: Coverage > 80%.
+    - *Current Coverage: ~90%*.
+- [ ] **[Debt]** **CI/CD**: Linting, Type Checking (mypy).
+    - *Estimate: S* (Tools installed, but not enforced in CI).
+- [x] **Documentation**: Comprehensive README.
+    - *Status*: Gold Standard achieved.
+- [ ] **[Debt]** **Refactoring**: Pay down critical technical debt.
+    - *Focus*: Improve `plugin.py` coverage (currently 65%) and error handling.
+    - *Estimate: M*
 
 ---
 
-## Phase 4: The Vision (GOD LEVEL)
+## 🚀 Phase 1: The Standard (Feature Parity)
+**Goal**: Competitiveness and user experience.
 
-**Focus**: "Futuristic" features, AI integration, advanced automation, and industry-disrupting capabilities.
-
-- [x] **Enhanced `no module named` Diagnosis**: Analyze AST to suggest correct paths based on defined symbols.
-- [x] **Fuzzy Module Search**: "Did you mean?" suggestions for typoed module names.
-- [ ] **AI-Powered Refactoring**: Large Language Model integration to suggest architectural refactors for complex cycles.
-- [ ] **Predictive Dependency Analysis**: Predict future conflicts based on dependency version trends.
-- [ ] **Architectural Drift Detection**: Define "forbidden paths" and alert when architecture violates constraints.
-- [ ] **Global Codebase Refactoring**: Apply import fixes across thousands of files safely in one go.
+- [x] **[Feat]** **UX**: CLI improvements, Error messages.
+- [x] **[Feat]** **Config**: Robust settings management.
+- [x] **[Feat]** **Performance**: Async, Caching.
+- *Risk*: Low.
 
 ---
 
-## The Sandbox (OUT OF THE BOX / OPTIONAL)
+## 🔌 Phase 2: The Ecosystem (Integration)
+**Goal**: Interoperability and extensibility.
 
-**Focus**: Wild, creative, experimental ideas that set the project apart.
+- [ ] **[Feat]** **API**: REST/GraphQL.
+    - *Estimate: L*
+- [x] **[Feat]** **Plugins**: Extension system.
+    - *Status*: Core architecture implemented; needs maturity and ecosystem growth.
+- *Risk*: Medium (Requires API design freeze).
+- *Dependencies*: Requires Phase 1.
 
-- [ ] **"Import Cost" Analysis**: Measure and report the startup time and memory overhead of each import.
-- [ ] **3D Dependency Visualization**: WebGL-based 3D graph of your project's architecture.
-- [ ] **Gamification**: Achievements for code health (e.g., "Clean Sweep", "Cycle Breaker").
-- [ ] **Runtime Profiler Integration**: Correlate static import structure with actual runtime usage hotspots.
+---
+
+## 🔮 Phase 3: The Vision (Innovation)
+**Goal**: Market Leader.
+
+- [ ] **[Feat]** **AI**: LLM Integration.
+    - *Estimate: L* (R&D).
+- [ ] **[Feat]** **Cloud**: K8s/Docker.
+    - *Estimate: M*
+- *Risk*: High (R&D).
+
+---
+
+## Legend
+- `[Feat]`: New Feature
+- `[Debt]`: Technical Debt
+- `[Bug]`: Bug Fix
+- `[ ]`: To Do
+- `[x]`: Completed
+- **Estimates**: S (Small), M (Medium), L (Large)
